@@ -54,19 +54,11 @@
         .transit-row { border-left: 2px solid #3b82f6; }
         
         #aiOverlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.9);
-            z-index: 200;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            backdrop-filter: blur(10px);
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); z-index: 200;
+            display: none; flex-direction: column;
+            justify-content: center; align-items: center;
+            padding: 2rem; backdrop-filter: blur(10px);
         }
 
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
@@ -74,18 +66,14 @@
 </head>
 <body class="bg-black text-white">
 
-    <div id="scrollIndicator" class="auto-scroll-indicator hidden"></div>
-
-    <!-- AI OVERLAY -->
     <div id="aiOverlay" onclick="this.style.display='none'">
         <div class="glass max-w-2xl w-full p-8 rounded-3xl border-blue-500/30">
             <h3 id="aiTitle" class="text-blue-400 font-bold uppercase tracking-widest text-xs mb-4">✨ Intelligence Briefing</h3>
             <div id="aiResponse" class="text-lg font-light leading-relaxed text-gray-200">Processing...</div>
-            <p class="text-[9px] text-gray-600 mt-6 uppercase">Tap anywhere to dismiss</p>
+            <p class="text-[9px] text-gray-600 mt-6 uppercase tracking-widest">Tap anywhere to dismiss</p>
         </div>
     </div>
 
-    <!-- MAIN CONTENT -->
     <main id="mainContent" class="content-view px-4 md:px-8 pb-8">
         
         <!-- SECTION 1: HERO -->
@@ -94,8 +82,8 @@
                 <div class="glass rounded-3xl p-6 md:p-10 flex flex-col justify-between min-h-[300px]">
                     <div>
                         <div class="flex justify-between items-start">
-                            <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">Environment</h2>
-                            <button onclick="generateDailyBriefing()" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full hover:bg-blue-500/20 transition font-bold tracking-widest">✨ AI BRIEFING</button>
+                            <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">Atmosphere</h2>
+                            <button onclick="generateDailyBriefing()" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full hover:bg-blue-500/20 transition font-bold tracking-widest uppercase">✨ AI BRIEFING</button>
                         </div>
                         <div id="weatherHero" class="flex items-center gap-6 my-8 opacity-0 transition-opacity duration-1000">
                             <div id="weatherIcon" class="text-7xl md:text-8xl text-white"><i class="fas fa-cloud-sun"></i></div>
@@ -106,7 +94,7 @@
                         </div>
                     </div>
                     <div class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5">
-                        <p id="clothingAdvice" class="text-sm md:text-base text-gray-300 italic font-light">Analyzing conditions...</p>
+                        <p id="clothingAdvice" class="text-sm md:text-base text-gray-300 italic font-light italic">Conditions analysis in progress...</p>
                     </div>
                 </div>
 
@@ -131,11 +119,11 @@
                     <h2 class="text-[10px] font-bold uppercase tracking-widest text-green-400">TickTick Sync</h2>
                     <div class="flex gap-2">
                         <button onclick="breakDownTask()" class="text-[9px] text-blue-400 hover:text-white border border-blue-500/20 px-2 py-1 rounded transition">✨ BREAKDOWN</button>
-                        <button onclick="promptTickTickSetup()" class="text-[9px] text-gray-600 hover:text-white border border-white/10 px-2 py-1 rounded transition">SETUP</button>
+                        <button onclick="promptTickTickSetup()" class="text-[9px] text-gray-600 hover:text-white border border-white/10 px-2 py-1 rounded transition uppercase">OAuth Setup</button>
                     </div>
                 </div>
                 <div id="taskList" class="space-y-3 overflow-y-auto pr-2 flex-grow">
-                    <p id="taskStatus" class="text-gray-500 text-sm italic">Connect TickTick to see tasks.</p>
+                    <p id="taskStatus" class="text-gray-500 text-sm italic">Status: Awaiting authorization...</p>
                 </div>
                 <div class="mt-4 pt-4 border-t border-white/5">
                     <button id="tickTickBtn" onclick="startTickTickAuth()" class="w-full text-[10px] bg-green-500/10 text-green-400 hover:text-white border border-green-500/20 py-2 rounded transition uppercase font-bold tracking-widest">Connect Account</button>
@@ -144,7 +132,7 @@
 
             <div class="glass rounded-3xl p-8 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-[10px] font-bold uppercase tracking-widest text-blue-400">Train Trip Info</h2>
+                    <h2 class="text-[10px] font-bold uppercase tracking-widest text-blue-400">Direct Train Routes</h2>
                     <span class="text-[9px] text-gray-600 font-bold tracking-tighter uppercase">NSR:418 <i class="fas fa-arrow-right mx-1"></i> NSR:157</span>
                 </div>
                 <div id="transitList" class="space-y-4"></div>
@@ -154,32 +142,33 @@
         <!-- SECTION 3: WEEKLY MEALS -->
         <section class="min-h-[calc(100vh-110px)] py-8 flex flex-col">
             <div class="flex justify-between items-center mb-8 px-2">
-                <h2 class="text-4xl md:text-5xl font-black tracking-tighter text-orange-400">Weekly Nutrition</h2>
-                <button onclick="promptWeeklyMeals()" class="bg-orange-500/10 text-orange-400 text-[10px] px-4 py-2 rounded-full border border-orange-500/20 font-bold uppercase transition hover:bg-orange-500/20">Edit Plan</button>
+                <h2 class="text-4xl md:text-5xl font-black tracking-tighter text-orange-400 uppercase">Weekly Nutrition</h2>
+                <button onclick="promptWeeklyMeals()" class="bg-orange-500/10 text-orange-400 text-[10px] px-4 py-2 rounded-full border border-orange-500/20 font-bold uppercase transition hover:bg-orange-500/20">Modify Plan</button>
             </div>
             <div id="weeklyMealsGrid" class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-4"></div>
         </section>
 
-        <!-- SECTION 4: CONTROLS -->
+        <!-- SECTION 4: SETTINGS -->
         <section class="min-h-[calc(100vh-110px)] flex flex-col justify-center items-center text-center p-8">
-            <h2 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">System Control</h2>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-8">Intelligence Settings</h2>
             <div class="flex gap-4">
                 <button id="toggleScroll" class="px-8 py-3 bg-white text-black rounded-full font-black text-xs tracking-widest hover:bg-gray-200 transition">START AUTO-SCROLL</button>
                 <button onclick="toggleFullscreen()" class="p-3 border border-white/20 rounded-full hover:bg-white/10 transition"><i class="fas fa-expand"></i></button>
-                <button onclick="promptGeminiKey()" class="p-3 border border-blue-500/20 rounded-full text-blue-400 hover:bg-blue-500/10 transition"><i class="fas fa-robot"></i></button>
+                <button onclick="promptGeminiKey()" class="p-3 border border-blue-500/20 rounded-full text-blue-400 hover:bg-blue-500/10 transition" title="Set Gemini API Key">
+                    <i class="fas fa-robot"></i>
+                </button>
             </div>
-            <p id="geminiStatus" class="mt-6 text-[9px] uppercase tracking-widest text-gray-600">Gemini Key: Not set</p>
+            <p id="geminiStatus" class="mt-6 text-[9px] uppercase tracking-widest text-gray-600">Gemini Key: Connection Pending</p>
         </section>
     </main>
 
-    <!-- FIXED FOOTER -->
     <footer class="dashboard-footer fixed bottom-0 left-0 w-full flex flex-col md:flex-row items-center justify-between px-6 md:px-12 z-50 py-4">
         <div class="flex items-baseline gap-4 mb-2 md:mb-0">
             <div id="clock" class="text-5xl font-black tracking-tighter leading-none">00:00</div>
             <div id="date" class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Friday, Dec 19</div>
         </div>
         <div class="flex-grow md:border-l border-white/10 md:pl-10 text-center md:text-left">
-            <p id="quoteText" class="text-sm md:text-lg font-light italic text-gray-300">"Wisdom is fetching..."</p>
+            <p id="quoteText" class="text-sm md:text-lg font-light italic text-gray-300">"Loading your daily focus..."</p>
             <p id="quoteAuthor" class="text-[9px] text-gray-600 uppercase mt-1">— ...</p>
         </div>
     </footer>
@@ -189,7 +178,107 @@
         const scrollBtn = document.getElementById('toggleScroll');
         let isAutoScrolling = false, scrollInterval, currentTasks = [];
 
-        // --- AUTH & PERSISTENCE ---
+        // --- TICKTICK OAuth Flow ---
+        window.promptTickTickSetup = function() {
+            const id = prompt("Enter TickTick Client ID:", localStorage.getItem('tt_client_id') || "");
+            const secret = prompt("Enter TickTick Client Secret:", localStorage.getItem('tt_client_secret') || "");
+            if(id) localStorage.setItem('tt_client_id', id);
+            if(secret) localStorage.setItem('tt_client_secret', secret);
+            alert("Credentials saved. Ensure Redirect URL is: " + window.location.origin + window.location.pathname);
+        };
+
+        window.startTickTickAuth = function() {
+            const client_id = localStorage.getItem('tt_client_id');
+            if(!client_id) return alert("Run SETUP first to enter Client ID.");
+            const redirect = encodeURIComponent(window.location.origin + window.location.pathname);
+            // TickTick OAuth URL
+            window.location.href = `https://ticktick.com/oauth/authorize?scope=tasks:read%20tasks:write&client_id=${client_id}&redirect_uri=${redirect}&response_type=code&state=aura`;
+        };
+
+        async function handleTickTickCallback() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const code = urlParams.get('code');
+            if (!code) return;
+
+            const client_id = localStorage.getItem('tt_client_id');
+            const client_secret = localStorage.getItem('tt_client_secret');
+            if(!client_id || !client_secret) return;
+
+            document.getElementById('taskStatus').textContent = "Completing OAuth handshake...";
+
+            try {
+                // Using corsproxy.io as it's more friendly with Authorization headers
+                const proxy = "https://corsproxy.io/?";
+                const tokenUrl = "https://ticktick.com/oauth/token";
+                
+                const body = new URLSearchParams({
+                    code: code,
+                    grant_type: 'authorization_code',
+                    scope: 'tasks:read tasks:write',
+                    redirect_uri: window.location.origin + window.location.pathname
+                });
+
+                const response = await fetch(proxy + encodeURIComponent(tokenUrl), {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                        'Authorization': 'Basic ' + btoa(client_id + ":" + client_secret)
+                    },
+                    body: body.toString()
+                });
+
+                if (!response.ok) throw new Error("HTTP Status " + response.status);
+                
+                const data = await response.json();
+                if(data.access_token) {
+                    localStorage.setItem('ticktick_token', data.access_token);
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    fetchTickTickTasks();
+                }
+            } catch (e) {
+                console.error("TickTick Auth Error", e);
+                document.getElementById('taskStatus').textContent = "Token exchange failed: " + e.message;
+            }
+        }
+
+        async function fetchTickTickTasks() {
+            const t = localStorage.getItem('ticktick_token');
+            if(!t) return;
+            const btn = document.getElementById('tickTickBtn');
+            btn.textContent = "ACCOUNT SYNCED";
+            btn.classList.add('opacity-50');
+
+            try {
+                // Fetching tasks via proxy
+                const proxy = "https://api.allorigins.win/get?url=";
+                const projectRes = await fetch(`${proxy}${encodeURIComponent("https://api.ticktick.com/open/v1/project")}`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                const projectWrap = await projectRes.json();
+                const projects = JSON.parse(projectWrap.contents);
+                
+                if(!projects.length) return;
+
+                const taskRes = await fetch(`${proxy}${encodeURIComponent(`https://api.ticktick.com/open/v1/project/${projects[0].id}/data`)}`, {
+                    headers: { 'Authorization': `Bearer ${t}` }
+                });
+                const taskWrap = await taskRes.json();
+                const data = JSON.parse(taskWrap.contents);
+                
+                const list = document.getElementById('taskList');
+                list.innerHTML = ''; currentTasks = [];
+                data.tasks.filter(tk => !tk.title.toLowerCase().includes('meal:')).slice(0, 8).forEach(tk => {
+                    currentTasks.push(tk.title);
+                    const d = document.createElement('div');
+                    d.className = 'flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition';
+                    d.innerHTML = `<div class="w-4 h-4 rounded-full border border-gray-600"></div><span class="text-sm font-light">${tk.title}</span>`;
+                    list.appendChild(d);
+                });
+                document.getElementById('taskStatus').classList.add('hidden');
+            } catch (e) { console.error("Sync error", e); }
+        }
+
+        // --- GEMINI & PERSISTENCE ---
         function updateGeminiStatus() {
             const key = localStorage.getItem('gemini_api_key');
             const el = document.getElementById('geminiStatus');
@@ -207,22 +296,43 @@
             if (k !== null) { localStorage.setItem('gemini_api_key', k); updateGeminiStatus(); }
         };
 
-        window.promptTickTickSetup = function() {
-            const id = prompt("TickTick Client ID:", localStorage.getItem('tt_client_id') || "");
-            const secret = prompt("TickTick Client Secret:", localStorage.getItem('tt_client_secret') || "");
-            if(id) localStorage.setItem('tt_client_id', id);
-            if(secret) localStorage.setItem('tt_client_secret', secret);
-            alert("Credentials saved.");
+        window.geminiQuery = async function(promptText, systemInstruction = "Aura dashboard assistant.") {
+            const key = localStorage.getItem('gemini_api_key');
+            if (!key) return "API Key missing.";
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    })
+                });
+                const res = await response.json();
+                return res.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
+            } catch (e) { return "AI Sync Error."; }
         };
 
-        window.startTickTickAuth = function() {
-            const client_id = localStorage.getItem('tt_client_id');
-            if(!client_id) return alert("Run SETUP first to enter Client ID.");
-            const redirect = encodeURIComponent(window.location.origin + window.location.pathname);
-            window.location.href = `https://ticktick.com/oauth/authorize?scope=tasks:read&client_id=${client_id}&redirect_uri=${redirect}&response_type=code&state=aura`;
+        window.generateDailyBriefing = async function() {
+            const overlay = document.getElementById('aiOverlay'), resEl = document.getElementById('aiResponse');
+            overlay.style.display = 'flex';
+            document.getElementById('aiTitle').textContent = "✨ Intelligence Briefing";
+            resEl.textContent = "Synthesizing environment data...";
+            const briefing = await window.geminiQuery(`Summarize day: Temp ${document.getElementById('temp').textContent}, Weather ${document.getElementById('weatherDesc').textContent}.`, "Minimalist tone.");
+            resEl.textContent = briefing;
         };
 
-        // --- CORE UI Logic ---
+        window.breakDownTask = async function() {
+            if (!currentTasks.length) return alert("Authorize TickTick first.");
+            const overlay = document.getElementById('aiOverlay'), resEl = document.getElementById('aiResponse');
+            overlay.style.display = 'flex';
+            document.getElementById('aiTitle').textContent = `✨ Breakdown: ${currentTasks[0]}`;
+            resEl.textContent = "Deconstructing task...";
+            const steps = await window.geminiQuery(`Break down "${currentTasks[0]}" into 3 small steps.`, "Expert tone.");
+            resEl.textContent = steps;
+        };
+
+        // --- CORE UI ---
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -232,9 +342,7 @@
 
         async function fetchQuote() {
             try {
-                // FIXED: Use the /get wrapper and parse wrapper.contents
-                const proxy = "https://api.allorigins.win/get?url=";
-                const res = await fetch(`${proxy}${encodeURIComponent('https://zenquotes.io/api/random')}`);
+                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://zenquotes.io/api/random')}`);
                 const wrapper = await res.json();
                 const data = JSON.parse(wrapper.contents);
                 if(data && data[0]) {
@@ -242,15 +350,14 @@
                     document.getElementById('quoteAuthor').textContent = `— ${data[0].a}`;
                 }
             } catch (e) {
-                document.getElementById('quoteText').textContent = "\"Excellence is an act, not a habit.\"";
-                document.getElementById('quoteAuthor').textContent = "— Aristotle";
+                document.getElementById('quoteText').textContent = "\"Excellence is not an act, but a habit.\"";
             }
         }
         fetchQuote();
 
         async function fetchWeather() {
             try {
-                const res = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.8354&lon=10.4392`, { headers: { 'User-Agent': 'AuraDashboard/2.2' } });
+                const res = await fetch(`https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=59.8354&lon=10.4392`, { headers: { 'User-Agent': 'AuraDash/2.2' } });
                 const data = await res.json();
                 const ts = data.properties.timeseries;
                 const cur = ts[0].data;
@@ -271,7 +378,7 @@
                 });
                 
                 const adv = document.getElementById('clothingAdvice');
-                adv.textContent = temp < 5 ? "Cold. Heavy layers and boots recommended." : "Mild. Light jacket suggested.";
+                adv.textContent = temp < 5 ? "Cold conditions. Layer wool and wear insulated boots." : "Mild weather. A light shell or sweater is sufficient.";
             } catch (e) {}
         }
 
@@ -288,7 +395,6 @@
             const list = document.getElementById('transitList');
             // STATION IDS AS REQUESTED: 418 TO 157
             const query = `{ trip(from: { place: "NSR:StopPlace:418" }, to: { place: "NSR:StopPlace:157" }, numTripPatterns: 5) { tripPatterns { startTime legs { mode line { publicCode } fromEstimatedCall { destinationDisplay { frontText } } } } } }`;
-            
             try {
                 const res = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
                     method: 'POST',
@@ -297,96 +403,22 @@
                 });
                 const json = await res.json();
                 const patterns = json.data?.trip?.tripPatterns;
+                if(!patterns) throw new Error();
                 
-                if(patterns && patterns.length > 0) {
-                    list.innerHTML = '';
-                    patterns.forEach(p => {
-                        const startTime = new Date(p.startTime);
-                        const diffMins = Math.max(0, Math.round((startTime - new Date()) / 60000));
-                        const leg = p.legs.find(l => l.mode === 'rail' || l.mode === 'bus' || l.mode === 'coach') || p.legs[0];
-                        if(leg) {
-                            const row = document.createElement('div');
-                            row.className = 'transit-row bg-white/5 p-4 rounded-r-xl flex justify-between items-center';
-                            row.innerHTML = `<div><span class="bg-blue-600 text-[10px] px-2 py-1 rounded font-bold mr-3">${leg.line?.publicCode || '??'}</span><span class="text-sm font-medium">${leg.fromEstimatedCall?.destinationDisplay?.frontText || 'Trip'}</span></div><div class="font-bold text-blue-400">${diffMins} min</div>`;
-                            list.appendChild(row);
-                        }
-                    });
-                } else {
-                    list.innerHTML = '<p class="text-gray-600 text-xs italic text-center py-4">No active trips found.</p>';
-                }
-            } catch (e) { 
-                list.innerHTML = '<p class="text-gray-600 text-xs italic text-center py-4">Checking routes...</p>'; 
-            }
+                list.innerHTML = '';
+                patterns.forEach(p => {
+                    const diff = Math.max(0, Math.round((new Date(p.startTime) - new Date()) / 60000));
+                    const leg = p.legs.find(l => l.mode === 'rail' || l.mode === 'bus' || l.mode === 'coach');
+                    if(leg) {
+                        const row = document.createElement('div');
+                        row.className = 'transit-row bg-white/5 p-4 rounded-r-xl flex justify-between items-center';
+                        row.innerHTML = `<div><span class="bg-blue-600 text-[10px] px-2 py-1 rounded font-bold mr-3">${leg.line?.publicCode || '??'}</span><span class="text-sm font-medium">${leg.fromEstimatedCall?.destinationDisplay?.frontText || 'Destination'}</span></div><div class="font-bold text-blue-400">${diff} min</div>`;
+                        list.appendChild(row);
+                    }
+                });
+            } catch (e) { list.innerHTML = '<p class="text-gray-700 text-xs italic text-center py-4">Syncing departures...</p>'; }
         }
         fetchTransit(); setInterval(fetchTransit, 60000);
-
-        // --- TICKTICK OAuth Flow Fix ---
-        async function handleTickTickCallback() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const code = urlParams.get('code');
-            if (!code) return;
-
-            const client_id = localStorage.getItem('tt_client_id');
-            const client_secret = localStorage.getItem('tt_client_secret');
-            if(!client_id || !client_secret) return;
-
-            try {
-                // Using Body instead of Headers for Client Credentials to bypass Proxy CORS preflight block
-                const proxy = "https://api.allorigins.win/get?url=";
-                const tokenUrl = "https://ticktick.com/oauth/token";
-                
-                // Construct parameters in the body to avoid preflight issues with custom headers
-                const body = new URLSearchParams({
-                    code: code,
-                    client_id: client_id,
-                    client_secret: client_secret,
-                    grant_type: 'authorization_code',
-                    scope: 'tasks:read',
-                    redirect_uri: window.location.origin + window.location.pathname
-                });
-
-                const response = await fetch(`${proxy}${encodeURIComponent(tokenUrl)}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-                    body: body.toString()
-                });
-
-                const wrapper = await response.json();
-                const data = JSON.parse(wrapper.contents);
-                
-                if(data.access_token) {
-                    localStorage.setItem('ticktick_token', data.access_token);
-                    window.history.replaceState({}, document.title, window.location.pathname);
-                    fetchTickTickTasks();
-                }
-            } catch (e) { console.error("OAuth token exchange failed", e); }
-        }
-
-        async function fetchTickTickTasks() {
-            const t = localStorage.getItem('ticktick_token'), list = document.getElementById('taskList'), status = document.getElementById('taskStatus');
-            if(!t) return;
-            document.getElementById('tickTickBtn').textContent = "CONNECTED";
-            try {
-                const proxy = "https://api.allorigins.win/get?url=";
-                const pUrl = encodeURIComponent("https://api.ticktick.com/open/v1/project");
-                const pRes = await fetch(`${proxy}${pUrl}`, { headers: { 'Authorization': `Bearer ${t}` } });
-                const pWrap = await pRes.json();
-                const projects = JSON.parse(pWrap.contents);
-                const tUrl = encodeURIComponent(`https://api.ticktick.com/open/v1/project/${projects[0].id}/data`);
-                const tRes = await fetch(`${proxy}${tUrl}`, { headers: { 'Authorization': `Bearer ${t}` } });
-                const tWrap = await tRes.json();
-                const data = JSON.parse(tWrap.contents);
-                list.innerHTML = ''; currentTasks = [];
-                data.tasks.filter(tk => !tk.title.toLowerCase().includes('meal:')).slice(0, 8).forEach(tk => {
-                    currentTasks.push(tk.title);
-                    const div = document.createElement('div');
-                    div.className = 'flex items-center gap-3 p-3 bg-white/5 rounded-xl border border-white/5 hover:bg-white/10 transition';
-                    div.innerHTML = `<div class="w-4 h-4 rounded-full border border-gray-600"></div><span class="text-sm font-light">${tk.title}</span>`;
-                    list.appendChild(div);
-                });
-                status.classList.add('hidden');
-            } catch (e) {}
-        }
 
         // --- Weekly Meals ---
         const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
@@ -423,44 +455,7 @@
             }
         });
 
-        // --- AI STUFF (Explicitly window-scoped) ---
-        window.geminiQuery = async function(promptText, systemInstruction = "Aura dashboard assistant.") {
-            const key = localStorage.getItem('gemini_api_key');
-            if (!key) return "API Key missing.";
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptText }] }],
-                        systemInstruction: { parts: [{ text: systemInstruction }] }
-                    })
-                });
-                const res = await response.json();
-                return res.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
-            } catch (e) { return "AI Sync Error."; }
-        };
-
-        window.generateDailyBriefing = async function() {
-            const overlay = document.getElementById('aiOverlay'), resEl = document.getElementById('aiResponse');
-            overlay.style.display = 'flex';
-            document.getElementById('aiTitle').textContent = "✨ Intelligence Briefing";
-            resEl.textContent = "Processing environmental factors...";
-            const briefing = await window.geminiQuery(`Summarize day: ${document.getElementById('temp').textContent}, ${document.getElementById('weatherDesc').textContent}.`, "Sleek tone.");
-            resEl.textContent = briefing;
-        };
-
-        window.breakDownTask = async function() {
-            if (!currentTasks.length) return alert("Sync tasks first.");
-            const overlay = document.getElementById('aiOverlay'), resEl = document.getElementById('aiResponse');
-            overlay.style.display = 'flex';
-            document.getElementById('aiTitle').textContent = `✨ Breakdown: ${currentTasks[0]}`;
-            resEl.textContent = "Analyzing complexity...";
-            const steps = await window.geminiQuery(`Break down "${currentTasks[0]}" into 3 small steps.`, "Expert tone.");
-            resEl.textContent = steps;
-        };
-
-        // Initialize everything
+        // Initialize State
         updateGeminiStatus();
         handleTickTickCallback();
         fetchTickTickTasks();
