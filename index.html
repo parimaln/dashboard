@@ -442,7 +442,7 @@
 
         async function fetchTransit() {
             const list = document.getElementById('transitList');
-            const originId = "NSR:StopPlace:58252", destinationId = "NSR:StopPlace:157";
+            const originId = "NSR:StopPlace:418", destinationId = "NSR:StopPlace:157";
             const query = `{ trip(from: { place: "${originId}" }, to: { place: "${destinationId}" }, numTripPatterns: 5) { tripPatterns { startTime duration legs { mode line { publicCode } fromEstimatedCall { destinationDisplay { frontText } } } } } }`;
             try {
                 const res = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
