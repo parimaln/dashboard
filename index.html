@@ -88,26 +88,25 @@
     <!-- MAIN CONTENT -->
     <main id="mainContent" class="content-view px-4 md:px-8 pb-8">
         
-        <!-- SECTION 1: HERO (WEATHER & CALENDAR) -->
+        <!-- SECTION 1: HERO -->
         <section class="min-h-[calc(100vh-130px)] flex flex-col pt-6 gap-6">
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow">
                 <div class="glass rounded-3xl p-6 md:p-10 flex flex-col justify-between min-h-[300px]">
                     <div>
                         <div class="flex justify-between items-start">
-                            <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">Met.no Forecast</h2>
+                            <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">Environment</h2>
                             <button onclick="generateDailyBriefing()" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full hover:bg-blue-500/20 transition font-bold tracking-widest">✨ AI BRIEFING</button>
                         </div>
                         <div id="weatherHero" class="flex items-center gap-6 my-8 opacity-0 transition-opacity duration-1000">
                             <div id="weatherIcon" class="text-7xl md:text-8xl text-white"><i class="fas fa-cloud-sun"></i></div>
                             <div>
                                 <div id="temp" class="text-7xl md:text-8xl font-black tracking-tighter">--°</div>
-                                <div id="weatherDesc" class="text-lg md:text-xl text-gray-400 capitalize font-light">Syncing...</div>
+                                <div id="weatherDesc" class="text-lg md:text-xl text-gray-400 capitalize font-light italic">Syncing...</div>
                             </div>
                         </div>
                     </div>
-                    
                     <div class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5">
-                        <p id="clothingAdvice" class="text-sm md:text-base text-gray-300 italic font-light italic">Analyzing conditions...</p>
+                        <p id="clothingAdvice" class="text-sm md:text-base text-gray-300 italic font-light">Analyzing conditions...</p>
                     </div>
                 </div>
 
@@ -145,13 +144,10 @@
 
             <div class="glass rounded-3xl p-8 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-8">
-                    <h2 class="text-[10px] font-bold uppercase tracking-widest text-blue-400">Direct Train Routes</h2>
-                    <span class="text-[9px] text-gray-500 uppercase font-bold tracking-tighter">Asker <i class="fas fa-long-arrow-alt-right mx-1"></i> Destination</span>
+                    <h2 class="text-[10px] font-bold uppercase tracking-widest text-blue-400">Train Trip Info</h2>
+                    <span class="text-[9px] text-gray-600 font-bold tracking-tighter uppercase">NSR:418 <i class="fas fa-arrow-right mx-1"></i> NSR:157</span>
                 </div>
                 <div id="transitList" class="space-y-4"></div>
-                <div class="mt-auto pt-6 text-[10px] text-gray-700 text-center uppercase tracking-[0.2em]">
-                    Syncing station NSR:157
-                </div>
             </div>
         </section>
 
@@ -172,7 +168,7 @@
                 <button onclick="toggleFullscreen()" class="p-3 border border-white/20 rounded-full hover:bg-white/10 transition"><i class="fas fa-expand"></i></button>
                 <button onclick="promptGeminiKey()" class="p-3 border border-blue-500/20 rounded-full text-blue-400 hover:bg-blue-500/10 transition"><i class="fas fa-robot"></i></button>
             </div>
-            <p id="geminiStatus" class="mt-6 text-[9px] uppercase tracking-widest text-gray-600 transition-colors">Gemini Key: Not set</p>
+            <p id="geminiStatus" class="mt-6 text-[9px] uppercase tracking-widest text-gray-600">Gemini Key: Not set</p>
         </section>
     </main>
 
@@ -193,7 +189,7 @@
         const scrollBtn = document.getElementById('toggleScroll');
         let isAutoScrolling = false, scrollInterval, currentTasks = [];
 
-        // --- AUTH & SETTINGS ---
+        // --- AUTH & PERSISTENCE ---
         function updateGeminiStatus() {
             const key = localStorage.getItem('gemini_api_key');
             const el = document.getElementById('geminiStatus');
@@ -206,64 +202,27 @@
             }
         }
 
-        function promptGeminiKey() {
+        window.promptGeminiKey = function() {
             const k = prompt("Enter Gemini API Key:", localStorage.getItem('gemini_api_key') || "");
             if (k !== null) { localStorage.setItem('gemini_api_key', k); updateGeminiStatus(); }
-        }
+        };
 
-        function promptTickTickSetup() {
+        window.promptTickTickSetup = function() {
             const id = prompt("TickTick Client ID:", localStorage.getItem('tt_client_id') || "");
             const secret = prompt("TickTick Client Secret:", localStorage.getItem('tt_client_secret') || "");
             if(id) localStorage.setItem('tt_client_id', id);
             if(secret) localStorage.setItem('tt_client_secret', secret);
             alert("Credentials saved.");
-        }
+        };
 
-        function startTickTickAuth() {
+        window.startTickTickAuth = function() {
             const client_id = localStorage.getItem('tt_client_id');
             if(!client_id) return alert("Run SETUP first to enter Client ID.");
             const redirect = encodeURIComponent(window.location.origin + window.location.pathname);
             window.location.href = `https://ticktick.com/oauth/authorize?scope=tasks:read&client_id=${client_id}&redirect_uri=${redirect}&response_type=code&state=aura`;
-        }
+        };
 
-        // --- GEMINI AI Logic ---
-        async function geminiQuery(promptText, systemInstruction = "Aura dashboard assistant.") {
-            const key = localStorage.getItem('gemini_api_key');
-            if (!key) return "API Key missing in settings.";
-            try {
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: promptText }] }],
-                        systemInstruction: { parts: [{ text: systemInstruction }] }
-                    })
-                });
-                const res = await response.json();
-                return res.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
-            } catch (e) { return "Intelligence Error."; }
-        }
-
-        async function generateDailyBriefing() {
-            const overlay = document.getElementById('aiOverlay'), resEl = document.getElementById('aiResponse');
-            overlay.style.display = 'flex';
-            document.getElementById('aiTitle').textContent = "✨ Intelligence Briefing";
-            resEl.textContent = "Processing environmental factors...";
-            const briefing = await geminiQuery(`Summarize day: ${document.getElementById('temp').textContent}, ${document.getElementById('weatherDesc').textContent}.`, "Sleek tone.");
-            resEl.textContent = briefing;
-        }
-
-        async function breakDownTask() {
-            if (!currentTasks.length) return alert("Sync tasks first.");
-            const overlay = document.getElementById('aiOverlay'), resEl = document.getElementById('aiResponse');
-            overlay.style.display = 'flex';
-            document.getElementById('aiTitle').textContent = `✨ Breakdown: ${currentTasks[0]}`;
-            resEl.textContent = "Analyzing complexity...";
-            const steps = await geminiQuery(`Break down "${currentTasks[0]}" into 3 small steps.`, "Expert tone.");
-            resEl.textContent = steps;
-        }
-
-        // --- CORE UI ---
+        // --- CORE UI Logic ---
         function updateClock() {
             const now = new Date();
             document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
@@ -273,7 +232,7 @@
 
         async function fetchQuote() {
             try {
-                // Fixed CORS approach using 'get' mode instead of 'raw'
+                // FIXED: Use the /get wrapper and parse wrapper.contents
                 const proxy = "https://api.allorigins.win/get?url=";
                 const res = await fetch(`${proxy}${encodeURIComponent('https://zenquotes.io/api/random')}`);
                 const wrapper = await res.json();
@@ -283,7 +242,7 @@
                     document.getElementById('quoteAuthor').textContent = `— ${data[0].a}`;
                 }
             } catch (e) {
-                document.getElementById('quoteText').textContent = "\"Excellence is not an act, but a habit.\"";
+                document.getElementById('quoteText').textContent = "\"Excellence is an act, not a habit.\"";
                 document.getElementById('quoteAuthor').textContent = "— Aristotle";
             }
         }
@@ -312,7 +271,7 @@
                 });
                 
                 const adv = document.getElementById('clothingAdvice');
-                adv.textContent = temp < 5 ? "Chilly. Thick wool and insulated boots." : "Mild conditions. Light layers.";
+                adv.textContent = temp < 5 ? "Cold. Heavy layers and boots recommended." : "Mild. Light jacket suggested.";
             } catch (e) {}
         }
 
@@ -327,8 +286,9 @@
 
         async function fetchTransit() {
             const list = document.getElementById('transitList');
-            // Route Asker (58252) -> 157
-            const query = `{ trip(from: { place: "NSR:StopPlace:58252" }, to: { place: "NSR:StopPlace:157" }, numTripPatterns: 5) { tripPatterns { startTime legs { mode line { publicCode } fromEstimatedCall { destinationDisplay { frontText } } } } } }`;
+            // STATION IDS AS REQUESTED: 418 TO 157
+            const query = `{ trip(from: { place: "NSR:StopPlace:418" }, to: { place: "NSR:StopPlace:157" }, numTripPatterns: 5) { tripPatterns { startTime legs { mode line { publicCode } fromEstimatedCall { destinationDisplay { frontText } } } } } }`;
+            
             try {
                 const res = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
                     method: 'POST',
@@ -337,53 +297,75 @@
                 });
                 const json = await res.json();
                 const patterns = json.data?.trip?.tripPatterns;
-                if(!patterns) throw new Error();
                 
-                list.innerHTML = '';
-                patterns.forEach(p => {
-                    const diff = Math.max(0, Math.round((new Date(p.startTime) - new Date()) / 60000));
-                    const leg = p.legs.find(l => l.mode === 'rail' || l.mode === 'bus' || l.mode === 'coach');
-                    if(leg) {
-                        const row = document.createElement('div');
-                        row.className = 'transit-row bg-white/5 p-4 rounded-r-xl flex justify-between items-center';
-                        row.innerHTML = `<div><span class="bg-blue-600 text-[10px] px-2 py-1 rounded font-bold mr-3">${leg.line?.publicCode || '??'}</span><span class="text-sm font-medium">${leg.fromEstimatedCall?.destinationDisplay?.frontText || 'Destination'}</span></div><div class="font-bold text-blue-400">${diff} min</div>`;
-                        list.appendChild(row);
-                    }
-                });
-            } catch (e) { list.innerHTML = '<p class="text-gray-700 text-xs italic text-center py-4">Syncing routes...</p>'; }
+                if(patterns && patterns.length > 0) {
+                    list.innerHTML = '';
+                    patterns.forEach(p => {
+                        const startTime = new Date(p.startTime);
+                        const diffMins = Math.max(0, Math.round((startTime - new Date()) / 60000));
+                        const leg = p.legs.find(l => l.mode === 'rail' || l.mode === 'bus' || l.mode === 'coach') || p.legs[0];
+                        if(leg) {
+                            const row = document.createElement('div');
+                            row.className = 'transit-row bg-white/5 p-4 rounded-r-xl flex justify-between items-center';
+                            row.innerHTML = `<div><span class="bg-blue-600 text-[10px] px-2 py-1 rounded font-bold mr-3">${leg.line?.publicCode || '??'}</span><span class="text-sm font-medium">${leg.fromEstimatedCall?.destinationDisplay?.frontText || 'Trip'}</span></div><div class="font-bold text-blue-400">${diffMins} min</div>`;
+                            list.appendChild(row);
+                        }
+                    });
+                } else {
+                    list.innerHTML = '<p class="text-gray-600 text-xs italic text-center py-4">No active trips found.</p>';
+                }
+            } catch (e) { 
+                list.innerHTML = '<p class="text-gray-600 text-xs italic text-center py-4">Checking routes...</p>'; 
+            }
         }
         fetchTransit(); setInterval(fetchTransit, 60000);
 
+        // --- TICKTICK OAuth Flow Fix ---
         async function handleTickTickCallback() {
             const urlParams = new URLSearchParams(window.location.search);
             const code = urlParams.get('code');
             if (!code) return;
-            const client_id = localStorage.getItem('tt_client_id'), client_secret = localStorage.getItem('tt_client_secret');
+
+            const client_id = localStorage.getItem('tt_client_id');
+            const client_secret = localStorage.getItem('tt_client_secret');
             if(!client_id || !client_secret) return;
+
             try {
+                // Using Body instead of Headers for Client Credentials to bypass Proxy CORS preflight block
                 const proxy = "https://api.allorigins.win/get?url=";
                 const tokenUrl = "https://ticktick.com/oauth/token";
-                const body = new URLSearchParams({ code, grant_type: 'authorization_code', scope: 'tasks:read', redirect_uri: window.location.origin + window.location.pathname });
+                
+                // Construct parameters in the body to avoid preflight issues with custom headers
+                const body = new URLSearchParams({
+                    code: code,
+                    client_id: client_id,
+                    client_secret: client_secret,
+                    grant_type: 'authorization_code',
+                    scope: 'tasks:read',
+                    redirect_uri: window.location.origin + window.location.pathname
+                });
+
                 const response = await fetch(`${proxy}${encodeURIComponent(tokenUrl)}`, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/x-www-form-urlencoded', 'Authorization': 'Basic ' + btoa(client_id + ":" + client_secret) },
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                     body: body.toString()
                 });
+
                 const wrapper = await response.json();
                 const data = JSON.parse(wrapper.contents);
+                
                 if(data.access_token) {
                     localStorage.setItem('ticktick_token', data.access_token);
                     window.history.replaceState({}, document.title, window.location.pathname);
                     fetchTickTickTasks();
                 }
-            } catch (e) {}
+            } catch (e) { console.error("OAuth token exchange failed", e); }
         }
 
         async function fetchTickTickTasks() {
             const t = localStorage.getItem('ticktick_token'), list = document.getElementById('taskList'), status = document.getElementById('taskStatus');
             if(!t) return;
-            const btn = document.getElementById('tickTickBtn');
-            btn.textContent = "CONNECTED";
+            document.getElementById('tickTickBtn').textContent = "CONNECTED";
             try {
                 const proxy = "https://api.allorigins.win/get?url=";
                 const pUrl = encodeURIComponent("https://api.ticktick.com/open/v1/project");
@@ -406,6 +388,7 @@
             } catch (e) {}
         }
 
+        // --- Weekly Meals ---
         const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
         function loadMeals() {
             const grid = document.getElementById('weeklyMealsGrid'), saved = JSON.parse(localStorage.getItem('aura_meals')) || {};
@@ -418,18 +401,18 @@
                 grid.appendChild(div);
             });
         }
-        function promptWeeklyMeals() {
+        window.promptWeeklyMeals = function() {
             const dy = prompt("Day (Mon-Sun):"); if(!days.includes(dy)) return;
             const saved = JSON.parse(localStorage.getItem('aura_meals')) || {};
             saved[dy] = { b: prompt("Breakfast:"), l: prompt("Lunch:"), d: prompt("Dinner:") };
             localStorage.setItem('aura_meals', JSON.stringify(saved)); loadMeals();
-        }
+        };
         loadMeals();
 
-        function toggleFullscreen() {
+        window.toggleFullscreen = function() {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
             else document.exitFullscreen();
-        }
+        };
 
         scrollBtn.addEventListener('click', () => {
             if (isAutoScrolling) { clearInterval(scrollInterval); scrollBtn.textContent = "START AUTO-SCROLL"; isAutoScrolling = false; }
@@ -440,7 +423,44 @@
             }
         });
 
-        // Initialize Everything
+        // --- AI STUFF (Explicitly window-scoped) ---
+        window.geminiQuery = async function(promptText, systemInstruction = "Aura dashboard assistant.") {
+            const key = localStorage.getItem('gemini_api_key');
+            if (!key) return "API Key missing.";
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${key}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: promptText }] }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    })
+                });
+                const res = await response.json();
+                return res.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
+            } catch (e) { return "AI Sync Error."; }
+        };
+
+        window.generateDailyBriefing = async function() {
+            const overlay = document.getElementById('aiOverlay'), resEl = document.getElementById('aiResponse');
+            overlay.style.display = 'flex';
+            document.getElementById('aiTitle').textContent = "✨ Intelligence Briefing";
+            resEl.textContent = "Processing environmental factors...";
+            const briefing = await window.geminiQuery(`Summarize day: ${document.getElementById('temp').textContent}, ${document.getElementById('weatherDesc').textContent}.`, "Sleek tone.");
+            resEl.textContent = briefing;
+        };
+
+        window.breakDownTask = async function() {
+            if (!currentTasks.length) return alert("Sync tasks first.");
+            const overlay = document.getElementById('aiOverlay'), resEl = document.getElementById('aiResponse');
+            overlay.style.display = 'flex';
+            document.getElementById('aiTitle').textContent = `✨ Breakdown: ${currentTasks[0]}`;
+            resEl.textContent = "Analyzing complexity...";
+            const steps = await window.geminiQuery(`Break down "${currentTasks[0]}" into 3 small steps.`, "Expert tone.");
+            resEl.textContent = steps;
+        };
+
+        // Initialize everything
         updateGeminiStatus();
         handleTickTickCallback();
         fetchTickTickTasks();
