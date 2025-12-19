@@ -136,7 +136,8 @@
                 <div class="glass rounded-3xl p-4 overflow-hidden relative min-h-[400px]">
                     <h2 class="text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-4 px-4">Today's Schedule</h2>
                     <div class="w-full h-[calc(100%-3rem)] rounded-2xl overflow-hidden bg-white/5 calendar-wrapper">
-                        <iframe id="gcal" src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Europe%2FAmsterdam&showPrint=0&src=cGFyaW1hbC44NkBnbWFpbC5jb20&src=ZmFtaWx5MTUyNTg0MzExMjQxNDkyMDI5MTFAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=MTkwM2VlNGI4YjY2NTQ2N2Y5NDk3OTNkZTk0N2Q3Y2ZmY2EzOWNiY2Y1MmUyMjY2MjIxMDcxOWZhZmEwYmIxY0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=YXNrZXJjYWxAZ21haWwuY29t&color=%23e4c441&color=%23d81b60&color=%23e67c73&color=%23b39ddb" style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
+                        <!-- mode=AGENDA is set here to ensure schedule view -->
+                        <iframe id="gcal" src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Europe%2FAmsterdam&showPrint=0&mode=AGENDA&src=cGFyaW1hbC44NkBnbWFpbC5jb20&color=%23e4c441" style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
                     </div>
                 </div>
             </div>
@@ -379,7 +380,6 @@
 
         async function fetchQuote() {
             try {
-                // Switching to a more reliable proxy-based quote fetch to avoid DNS/CSP issues
                 const proxyUrl = "https://api.allorigins.win/raw?url=";
                 const target = encodeURIComponent("https://zenquotes.io/api/random");
                 const res = await fetch(`${proxyUrl}${target}`);
@@ -396,10 +396,10 @@
         fetchQuote();
 
         async function fetchWeather() {
-            const lat = 59.8354, lon = 10.4392;
+            const lat = 59.8354, lon = 10.4392; // Asker
             const apiUrl = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
             try {
-                const res = await fetch(apiUrl, { headers: { 'User-Agent': 'AuraDash/2.1' } });
+                const res = await fetch(apiUrl, { headers: { 'User-Agent': 'AuraDash/2.2' } });
                 const data = await res.json();
                 const timeseries = data.properties.timeseries;
                 const current = timeseries[0].data;
@@ -442,7 +442,8 @@
 
         async function fetchTransit() {
             const list = document.getElementById('transitList');
-            const originId = "NSR:StopPlace:418", destinationId = "NSR:StopPlace:157";
+            // Origin: Asker (58252), Destination: Target (157)
+            const originId = "NSR:StopPlace:58252", destinationId = "NSR:StopPlace:157";
             const query = `{ trip(from: { place: "${originId}" }, to: { place: "${destinationId}" }, numTripPatterns: 5) { tripPatterns { startTime duration legs { mode line { publicCode } fromEstimatedCall { destinationDisplay { frontText } } } } } }`;
             try {
                 const res = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
@@ -453,7 +454,7 @@
                 const json = await res.json();
                 
                 if (!json.data || !json.data.trip || !json.data.trip.tripPatterns) {
-                    list.innerHTML = '<p class="text-gray-500 text-xs italic">No trip patterns found.</p>';
+                    list.innerHTML = '<p class="text-gray-500 text-xs italic text-center py-4">No trip patterns found.</p>';
                     return;
                 }
 
@@ -461,7 +462,6 @@
                 json.data.trip.tripPatterns.forEach(p => {
                     const startTime = new Date(p.startTime);
                     const diffMins = Math.max(0, Math.round((startTime - new Date()) / 60000));
-                    // Look for the primary transit leg (rail or bus)
                     const leg = p.legs.find(l => l.mode === 'rail' || l.mode === 'bus' || l.mode === 'coach');
                     if (leg) {
                         const row = document.createElement('div');
@@ -500,7 +500,6 @@
             loadMeals();
         }
 
-        // --- Utils ---
         function toggleFullscreen() {
             if (!document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {});
             else document.exitFullscreen();
@@ -525,7 +524,7 @@
             }
         });
 
-        // Initialize Everything
+        // Initialize
         updateGeminiStatus();
         fetchWeather();
         fetchTransit();
