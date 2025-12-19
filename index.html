@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aura | Personal Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #000;
+            color: #fff;
+            overflow: hidden; 
+            touch-action: pan-y;
+        }
+
+        .glass {
+            background: rgba(20, 20, 20, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .content-view {
+            height: calc(100vh - 110px); 
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+        }
+        .content-view::-webkit-scrollbar { display: none; }
+
+        .dashboard-footer {
+            height: 110px;
+            background: linear-gradient(to top, #000 90%, transparent);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .calendar-wrapper {
+            filter: invert(90%) hue-rotate(180deg) brightness(1.2);
+            mix-blend-mode: screen;
+        }
+
+        .hourly-scroll {
+            display: flex;
+            overflow-x: auto;
+            gap: 1rem;
+            padding-bottom: 0.5rem;
+            scrollbar-width: none;
+        }
+        .hourly-scroll::-webkit-scrollbar { display: none; }
+
+        .transit-row { border-left: 2px solid #3b82f6; }
+        
+        .auto-scroll-indicator {
+            position: fixed;
+            bottom: 120px;
+            right: 20px;
+            width: 10px;
+            height: 10px;
+            background: #3b82f6;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            z-index: 100;
+        }
+
+        #aiOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            z-index: 200;
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            backdrop-filter: blur(10px);
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.5); opacity: 0.5; } 100% { transform: scale(1); opacity: 1; } }
+    </style>
+</head>
+<body class="bg-black text-white">
+
+    <div id="scrollIndicator" class="auto-scroll-indicator hidden"></div>
+
+    <!-- AI OVERLAY -->
+    <div id="aiOverlay" onclick="this.style.display='none'">
+        <div class="glass max-w-2xl w-full p-8 rounded-3xl border-blue-500/30">
+            <h3 id="aiTitle" class="text-blue-400 font-bold uppercase tracking-widest text-xs mb-4">✨ Intelligence Briefing</h3>
+            <div id="aiResponse" class="text-lg font-light leading-relaxed text-gray-200">
+                Processing data points...
+            </div>
+            <p class="text-[9px] text-gray-600 mt-6 uppercase">Tap anywhere to dismiss</p>
+        </div>
+    </div>
+
+    <!-- MAIN SCROLLABLE CONTENT -->
+    <main id="mainContent" class="content-view px-4 md:px-8 pb-8">
+        
+        <!-- SECTION 1: TOP HERO (WEATHER & CALENDAR) -->
+        <section class="min-h-[calc(100vh-130px)] flex flex-col pt-6 gap-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 flex-grow">
+                <!-- Current Weather -->
+                <div class="glass rounded-3xl p-6 md:p-10 flex flex-col justify-between min-h-[300px]">
+                    <div>
+                        <div class="flex justify-between items-start">
+                            <h2 class="text-[10px] font-bold uppercase tracking-[0.2em] text-blue-400">Met.no Forecast</h2>
+                            <button onclick="generateDailyBriefing()" class="text-[10px] bg-blue-500/10 text-blue-400 border border-blue-500/20 px-3 py-1 rounded-full hover:bg-blue-500/20 transition">✨ AI BRIEFING</button>
+                        </div>
+                        <div id="weatherHero" class="flex items-center gap-6 my-8 opacity-0 transition-opacity duration-1000">
+                            <div id="weatherIcon" class="text-7xl md:text-8xl text-white">
+                                <i class="fas fa-cloud-sun"></i>
+                            </div>
+                            <div>
+                                <div id="temp" class="text-7xl md:text-8xl font-black tracking-tighter">--°</div>
+                                <div id="weatherDesc" class="text-lg md:text-xl text-gray-400 capitalize font-light">Syncing...</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-5">
+                        <div class="flex items-center gap-3 mb-2">
+                            <i class="fas fa-tshirt text-blue-400 text-xs"></i>
+                            <span class="text-[10px] font-bold uppercase tracking-widest text-blue-200">Clothing Advice</span>
+                        </div>
+                        <p id="clothingAdvice" class="text-sm md:text-base text-gray-300 italic font-light">Analyzing conditions...</p>
+                    </div>
+                </div>
+
+                <!-- Google Calendar -->
+                <div class="glass rounded-3xl p-4 overflow-hidden relative min-h-[400px]">
+                    <h2 class="text-[10px] font-bold uppercase tracking-widest text-purple-400 mb-4 px-4">Today's Schedule</h2>
+                    <div class="w-full h-[calc(100%-3rem)] rounded-2xl overflow-hidden bg-white/5 calendar-wrapper">
+                        <iframe id="gcal" src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=Europe%2FAmsterdam&showPrint=0&src=cGFyaW1hbC44NkBnbWFpbC5jb20&src=ZmFtaWx5MTUyNTg0MzExMjQxNDkyMDI5MTFAZ3JvdXAuY2FsZW5kYXIuZ29vZ2xlLmNvbQ&src=MTkwM2VlNGI4YjY2NTQ2N2Y5NDk3OTNkZTk0N2Q3Y2ZmY2EzOWNiY2Y1MmUyMjY2MjIxMDcxOWZhZmEwYmIxY0Bncm91cC5jYWxlbmRhci5nb29nbGUuY29t&src=YXNrZXJjYWxAZ21haWwuY29t&color=%23e4c441&color=%23d81b60&color=%23e67c73&color=%23b39ddb" style="border: 0" width="100%" height="100%" frameborder="0" scrolling="no"></iframe>
+                    </div>
+                </div>
+            </div>
+
+            <!-- HOURLY FORECAST (Horizontal Scroll) -->
+            <div class="glass rounded-3xl p-6">
+                <h3 class="text-[10px] font-bold uppercase tracking-widest text-blue-300 mb-6">Next 24 Hours</h3>
+                <div id="hourlyScroll" class="hourly-scroll">
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 2: TICKTICK & TRANSIT -->
+        <section class="min-h-[calc(100vh-110px)] grid grid-cols-1 md:grid-cols-2 gap-6 py-8">
+            <div class="glass rounded-3xl p-8 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-[10px] font-bold uppercase tracking-widest text-green-400">TickTick Sync</h2>
+                    <div class="flex gap-2">
+                        <button onclick="breakDownTask()" class="text-[9px] text-blue-400 hover:text-white border border-blue-500/20 px-2 py-1 rounded">✨ BREAKDOWN</button>
+                        <button onclick="promptTickTick()" class="text-[9px] text-gray-600 hover:text-white border border-white/10 px-2 py-1 rounded">TOKEN</button>
+                    </div>
+                </div>
+                <div id="taskList" class="space-y-3 overflow-y-auto pr-2 flex-grow">
+                    <p class="text-gray-500 text-sm italic">Add tasks to see them here.</p>
+                </div>
+            </div>
+
+            <!-- ENHANCED TRANSIT BETWEEN STATIONS -->
+            <div class="glass rounded-3xl p-8 flex flex-col h-full">
+                <div class="flex justify-between items-center mb-8">
+                    <h2 class="text-[10px] font-bold uppercase tracking-widest text-blue-400">Direct Train Routes</h2>
+                    <span class="text-[9px] text-gray-500 uppercase">Asker <i class="fas fa-arrow-right mx-1"></i> Lysaker</span>
+                </div>
+                <div id="transitList" class="space-y-4"></div>
+                <div class="mt-auto pt-6 text-[10px] text-gray-600 text-center uppercase tracking-widest">
+                    Tracking NSR:StopPlace:157
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION 3: WEEKLY MEALS -->
+        <section class="min-h-[calc(100vh-110px)] py-8 flex flex-col">
+            <div class="flex justify-between items-center mb-8 px-2">
+                <h2 class="text-4xl md:text-5xl font-black tracking-tighter">Weekly Nutrition</h2>
+                <div class="flex gap-2">
+                    <button onclick="suggestRecipe()" class="bg-blue-500/10 text-blue-400 text-[10px] px-4 py-2 rounded-full border border-blue-500/20 font-bold uppercase transition hover:bg-blue-500/20">✨ RECIPE</button>
+                    <button onclick="promptWeeklyMeals()" class="bg-orange-500/10 text-orange-400 text-[10px] px-4 py-2 rounded-full border border-orange-500/20 font-bold uppercase">Edit</button>
+                </div>
+            </div>
+            <div id="weeklyMealsGrid" class="grid grid-cols-2 sm:grid-cols-4 xl:grid-cols-7 gap-4"></div>
+        </section>
+    </main>
+
+    <!-- FIXED FOOTER -->
+    <footer class="dashboard-footer fixed bottom-0 left-0 w-full flex flex-col md:flex-row items-center justify-between px-6 md:px-12 z-50 py-4">
+        <div class="flex items-baseline gap-4 mb-2 md:mb-0">
+            <div id="clock" class="text-5xl font-black tracking-tighter leading-none">00:00</div>
+            <div id="date" class="text-[10px] text-gray-500 uppercase tracking-widest font-bold">Friday, Dec 19</div>
+        </div>
+        <div class="flex-grow md:border-l border-white/10 md:pl-10 text-center md:text-left">
+            <p id="quoteText" class="text-sm md:text-lg font-light italic leading-snug text-gray-300 line-clamp-2">"Wisdom is fetching..."</p>
+            <p id="quoteAuthor" class="text-[9px] text-gray-600 uppercase tracking-widest mt-1">— ...</p>
+        </div>
+    </footer>
+
+    <script>
+        const apiKey = ""; 
+        let isAutoScrolling = false;
+        let scrollInterval;
+        let lastWeatherData = null;
+        let currentTasks = [];
+
+        async function geminiQuery(prompt, systemInstruction = "You are a helpful dashboard assistant.") {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    })
+                });
+                const result = await response.json();
+                return result.candidates?.[0]?.content?.parts?.[0]?.text;
+            } catch (error) {
+                console.error("Gemini API Error:", error);
+                return "Intelligence module currently offline.";
+            }
+        }
+
+        async function generateDailyBriefing() {
+            const overlay = document.getElementById('aiOverlay');
+            const responseEl = document.getElementById('aiResponse');
+            const titleEl = document.getElementById('aiTitle');
+            overlay.style.display = 'flex';
+            titleEl.textContent = "✨ Intelligence Briefing";
+            responseEl.textContent = "Processing environmental data...";
+            const prompt = `Briefly summarize my day: Temp ${document.getElementById('temp').textContent}, Weather ${document.getElementById('weatherDesc').textContent}. Suggest one high-impact focus.`;
+            const briefing = await geminiQuery(prompt, "Sleek, minimalist AI tone.");
+            responseEl.textContent = briefing;
+        }
+
+        async function suggestRecipe() {
+            const overlay = document.getElementById('aiOverlay');
+            const responseEl = document.getElementById('aiResponse');
+            const titleEl = document.getElementById('aiTitle');
+            overlay.style.display = 'flex';
+            titleEl.textContent = "✨ Dinner Intelligence";
+            const saved = JSON.parse(localStorage.getItem('aura_meals')) || {};
+            const today = new Intl.DateTimeFormat('en-US', { weekday: 'short' }).format(new Date());
+            const dinner = saved[today]?.d || "Salmon";
+            responseEl.textContent = `Optimizing recipe for ${dinner}...`;
+            const recipe = await geminiQuery(`Micron-sized 3-step recipe for ${dinner}.`, "Michelin-star brevity.");
+            responseEl.textContent = recipe;
+        }
+
+        async function breakDownTask() {
+            if (!currentTasks.length) return;
+            const overlay = document.getElementById('aiOverlay');
+            const responseEl = document.getElementById('aiResponse');
+            overlay.style.display = 'flex';
+            document.getElementById('aiTitle').textContent = `✨ Breakdown: ${currentTasks[0]}`;
+            const prompt = `Break down "${currentTasks[0]}" into 3 micro-steps.`;
+            const res = await geminiQuery(prompt, "Productivity expert tone.");
+            responseEl.textContent = res;
+        }
+
+        function updateClock() {
+            const now = new Date();
+            document.getElementById('clock').textContent = now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+            document.getElementById('date').textContent = now.toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
+        async function fetchQuote() {
+            try {
+                const res = await fetch('https://api.quotable.io/random');
+                const data = await res.json();
+                document.getElementById('quoteText').textContent = `"${data.content}"`;
+                document.getElementById('quoteAuthor').textContent = `— ${data.author}`;
+            } catch (e) {
+                document.getElementById('quoteText').textContent = "\"The best way to predict the future is to create it.\"";
+            }
+        }
+        fetchQuote();
+
+        async function fetchWeather() {
+            const lat = 59.8354, lon = 10.4392;
+            const apiUrl = `https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${lat}&lon=${lon}`;
+            try {
+                const res = await fetch(apiUrl, { headers: { 'User-Agent': 'AuraDash/2.1 personal@example.com' } });
+                const data = await res.json();
+                const timeseries = data.properties.timeseries;
+                const current = timeseries[0].data;
+                const temp = Math.round(current.instant.details.air_temperature);
+                const symbol = current.next_1_hours.summary.symbol_code;
+                document.getElementById('temp').textContent = `${temp}°`;
+                document.getElementById('weatherDesc').textContent = symbol.replace(/_/g, ' ');
+                document.getElementById('weatherHero').classList.remove('opacity-0');
+                const hourlyScroll = document.getElementById('hourlyScroll');
+                hourlyScroll.innerHTML = '';
+                timeseries.slice(0, 24).forEach(hour => {
+                    const hTime = new Date(hour.time).getHours() + ":00";
+                    const hTemp = Math.round(hour.data.instant.details.air_temperature);
+                    const hSymbol = hour.data.next_1_hours?.summary.symbol_code || hour.data.next_6_hours?.summary.symbol_code;
+                    const item = document.createElement('div');
+                    item.className = 'flex flex-col items-center min-w-[70px] bg-white/5 p-4 rounded-2xl border border-white/5';
+                    item.innerHTML = `<span class="text-[10px] text-gray-500 font-bold mb-2">${hTime}</span><div class="text-xl mb-2 text-white"><i class="fas ${getIconForSymbol(hSymbol)}"></i></div><span class="text-sm font-black">${hTemp}°</span>`;
+                    hourlyScroll.appendChild(item);
+                });
+                updateClothingAdvice(temp, symbol);
+            } catch (e) {}
+        }
+
+        function getIconForSymbol(symbol) {
+            if(!symbol) return "fa-cloud";
+            if(symbol.includes('clear')) return "fa-sun";
+            if(symbol.includes('rain')) return "fa-cloud-rain";
+            if(symbol.includes('snow')) return "fa-snowflake";
+            return "fa-cloud-sun";
+        }
+
+        function updateClothingAdvice(temp, symbol) {
+            const adviceEl = document.getElementById('clothingAdvice');
+            let advice = temp < 5 ? "Very cold. Thick wool and insulated boots." : "Mild. Light layers.";
+            if (symbol.includes('rain')) advice += " Take an umbrella.";
+            adviceEl.textContent = advice;
+        }
+        fetchWeather();
+        setInterval(fetchWeather, 900000);
+
+        // --- UPDATED TRANSIT FOR SPECIFIC DESTINATION ---
+        async function fetchTransit() {
+            const list = document.getElementById('transitList');
+            const originId = "NSR:StopPlace:418"; // Asker
+            const destinationId = "NSR:StopPlace:157"; // Targeted station
+            
+            // Entur GraphQL Query for trips between two stations
+            const query = `
+            {
+              trip(
+                from: { place: "${originId}" }
+                to: { place: "${destinationId}" }
+                numTripPatterns: 5
+              ) {
+                tripPatterns {
+                  startTime
+                  duration
+                  legs {
+                    mode
+                    line {
+                      publicCode
+                    }
+                    fromEstimatedCall {
+                      destinationDisplay {
+                        frontText
+                      }
+                    }
+                  }
+                }
+              }
+            }`;
+
+            try {
+                const res = await fetch('https://api.entur.io/journey-planner/v3/graphql', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'ET-Client-Name': 'aura-v2' },
+                    body: JSON.stringify({ query })
+                });
+                const json = await res.json();
+                list.innerHTML = '';
+                
+                const patterns = json.data.trip.tripPatterns;
+                if (!patterns || patterns.length === 0) {
+                    list.innerHTML = '<p class="text-gray-500 text-xs italic">No direct trains found for this route.</p>';
+                    return;
+                }
+
+                patterns.forEach(p => {
+                    const startTime = new Date(p.startTime);
+                    const diffMins = Math.max(0, Math.round((startTime - new Date()) / 60000));
+                    // Get the first transit leg
+                    const leg = p.legs.find(l => l.mode === 'rail' || l.mode === 'bus' || l.mode === 'coach');
+                    
+                    if (leg) {
+                        const row = document.createElement('div');
+                        row.className = 'transit-row bg-white/5 p-4 rounded-r-xl flex justify-between items-center transition hover:bg-white/10';
+                        row.innerHTML = `
+                            <div>
+                                <span class="bg-blue-600 text-[10px] px-2 py-1 rounded font-bold mr-3">${leg.line?.publicCode || '??'}</span>
+                                <span class="text-sm font-medium">${leg.fromEstimatedCall?.destinationDisplay?.frontText || 'Oslo S'}</span>
+                            </div>
+                            <div class="text-right">
+                                <div class="font-bold text-blue-400">${diffMins} min</div>
+                                <div class="text-[9px] text-gray-600 uppercase">Duration: ${Math.round(p.duration / 60)}m</div>
+                            </div>
+                        `;
+                        list.appendChild(row);
+                    }
+                });
+            } catch (e) {
+                list.innerHTML = '<p class="text-red-500 text-xs italic">Sync error.</p>';
+            }
+        }
+        fetchTransit();
+        setInterval(fetchTransit, 60000);
+
+        const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+        function loadMeals() {
+            const grid = document.getElementById('weeklyMealsGrid');
+            const saved = JSON.parse(localStorage.getItem('aura_meals')) || {};
+            grid.innerHTML = '';
+            days.forEach(day => {
+                const dayData = saved[day] || { b: "---", l: "---", d: "---" };
+                const div = document.createElement('div');
+                div.className = 'glass rounded-2xl p-4 flex flex-col gap-2';
+                div.innerHTML = `<h3 class="text-[9px] font-black uppercase text-orange-400 border-b border-white/5 pb-1">${day}</h3><p class="text-[10px] text-gray-500">B: <span class="text-white">${dayData.b}</span></p><p class="text-[10px] text-gray-500">L: <span class="text-white">${dayData.l}</span></p><p class="text-[10px] text-gray-500">D: <span class="text-white">${dayData.d}</span></p>`;
+                grid.appendChild(div);
+            });
+        }
+        function promptWeeklyMeals() {
+            const d = prompt("Day (Mon-Sun):");
+            if (!days.includes(d)) return;
+            const b = prompt("Breakfast:"), l = prompt("Lunch:"), din = prompt("Dinner:");
+            const saved = JSON.parse(localStorage.getItem('aura_meals')) || {};
+            saved[d] = { b, l, d: din };
+            localStorage.setItem('aura_meals', JSON.stringify(saved));
+            loadMeals();
+        }
+        loadMeals();
+        currentTasks = ["Finalize dashboard", "Buy groceries"];
+        function promptTickTick() {
+            const t = prompt("Enter TickTick API Token:");
+            if(t) localStorage.setItem('ticktick_token', t);
+        }
+    </script>
+</body>
+</html>
