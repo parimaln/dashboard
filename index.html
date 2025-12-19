@@ -167,7 +167,7 @@
             <div class="glass rounded-3xl p-8 flex flex-col h-full">
                 <div class="flex justify-between items-center mb-8">
                     <h2 class="text-[10px] font-bold uppercase tracking-widest text-blue-400">Direct Train Routes</h2>
-                    <span class="text-[9px] text-gray-500 uppercase">Asker <i class="fas fa-arrow-right mx-1"></i> Lysaker</span>
+                    <span class="text-[9px] text-gray-500 uppercase">Asker <i class="fas fa-arrow-right mx-1"></i> Destination</span>
                 </div>
                 <div id="transitList" class="space-y-4"></div>
                 <div class="mt-auto pt-6 text-[10px] text-gray-600 text-center uppercase tracking-widest">
@@ -379,10 +379,15 @@
 
         async function fetchQuote() {
             try {
-                const res = await fetch('https://api.quotable.io/random');
+                // Switching to a more reliable proxy-based quote fetch to avoid DNS/CSP issues
+                const proxyUrl = "https://api.allorigins.win/raw?url=";
+                const target = encodeURIComponent("https://zenquotes.io/api/random");
+                const res = await fetch(`${proxyUrl}${target}`);
                 const data = await res.json();
-                document.getElementById('quoteText').textContent = `"${data.content}"`;
-                document.getElementById('quoteAuthor').textContent = `— ${data.author}`;
+                if (data && data[0]) {
+                    document.getElementById('quoteText').textContent = `"${data[0].q}"`;
+                    document.getElementById('quoteAuthor').textContent = `— ${data[0].a}`;
+                }
             } catch (e) {
                 document.getElementById('quoteText').textContent = "\"Efficiency is doing things right; effectiveness is doing the right things.\"";
                 document.getElementById('quoteAuthor').textContent = "— Peter Drucker";
@@ -446,19 +451,29 @@
                     body: JSON.stringify({ query })
                 });
                 const json = await res.json();
+                
+                if (!json.data || !json.data.trip || !json.data.trip.tripPatterns) {
+                    list.innerHTML = '<p class="text-gray-500 text-xs italic">No trip patterns found.</p>';
+                    return;
+                }
+
                 list.innerHTML = '';
                 json.data.trip.tripPatterns.forEach(p => {
                     const startTime = new Date(p.startTime);
                     const diffMins = Math.max(0, Math.round((startTime - new Date()) / 60000));
-                    const leg = p.legs.find(l => l.mode === 'rail' || l.mode === 'bus');
+                    // Look for the primary transit leg (rail or bus)
+                    const leg = p.legs.find(l => l.mode === 'rail' || l.mode === 'bus' || l.mode === 'coach');
                     if (leg) {
                         const row = document.createElement('div');
                         row.className = 'transit-row bg-white/5 p-4 rounded-r-xl flex justify-between items-center';
-                        row.innerHTML = `<div><span class="bg-blue-600 text-[10px] px-2 py-1 rounded font-bold mr-3">${leg.line?.publicCode || '??'}</span><span class="text-sm font-medium">Oslo S</span></div><div class="text-right"><div class="font-bold text-blue-400">${diffMins} min</div></div>`;
+                        row.innerHTML = `<div><span class="bg-blue-600 text-[10px] px-2 py-1 rounded font-bold mr-3">${leg.line?.publicCode || '??'}</span><span class="text-sm font-medium">${leg.fromEstimatedCall?.destinationDisplay?.frontText || 'Oslo S'}</span></div><div class="text-right"><div class="font-bold text-blue-400">${diffMins} min</div></div>`;
                         list.appendChild(row);
                     }
                 });
-            } catch (e) {}
+            } catch (e) {
+                console.error("Entur Error:", e);
+                list.innerHTML = '<p class="text-red-500 text-xs italic">Transit sync error.</p>';
+            }
         }
 
         const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
