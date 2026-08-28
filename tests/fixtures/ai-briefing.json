@@ -1,0 +1,16 @@
+{
+  "headline": "Snow and ice this morning \u2014 leave ten minutes early.",
+  "bullets": [
+    "The 07:04 is already unreachable; aim for the 07:21 to Skien.",
+    "Aria has swimming at 13:00, so pack her kit before school.",
+    "Three chores are overdue, including the barnehage invoice."
+  ],
+  "generatedAt": "2026-09-03T06:45:00.000Z",
+  "model": "qwen2.5:14b-instruct",
+  "dressLine": "Wool and a waterproof shell \u2014 it is icy, and Aria walks to swimming.",
+  "reminders": [
+    "Chess book for Ada",
+    "Club card",
+    "Bins out tonight"
+  ]
+}

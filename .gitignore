@@ -1,0 +1,17 @@
+node_modules/
+dist/
+
+# Personal configuration. Examples are committed; the real files are not:
+# public.json can come from the PUBLIC_CONFIG repository variable at build time,
+# and household.md typically names family members.
+config/public.json
+config/household.md
+
+.env
+.env.*
+!.env.example
+*.local
+playwright-report/
+test-results/
+coverage/
+.DS_Store

@@ -1,0 +1,31 @@
+{
+  "days": [
+    {
+      "date": "2026-09-03",
+      "entries": [
+        {
+          "type": "breakfast",
+          "title": "Porridge with berries"
+        },
+        {
+          "type": "dinner",
+          "title": "Salmon, potatoes and broccoli",
+          "description": "Uses the salmon in the fridge"
+        }
+      ]
+    },
+    {
+      "date": "2026-09-04",
+      "entries": [
+        {
+          "type": "lunch",
+          "title": "Leftover salmon salad"
+        },
+        {
+          "type": "dinner",
+          "title": "Taco Friday"
+        }
+      ]
+    }
+  ]
+}

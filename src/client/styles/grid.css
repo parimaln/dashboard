@@ -1,0 +1,110 @@
+/*
+ * The stage is one screen, divided into three full-height columns plus a bottom
+ * bar. Components are assigned to areas in config/public.json, never here, so the
+ * board can be rearranged without touching CSS.
+ *
+ * Deliberately expressed in fr units and vh rather than a fixed aspect ratio: the
+ * target panel is 4096x2160 (DCI 4K, 1.896:1) but the same layout has to hold on a
+ * 16:9 TV or a developer's laptop.
+ */
+.stage {
+  display: grid;
+  grid-template-columns: 1.05fr 1fr 1.25fr;
+  grid-template-rows: 1fr auto;
+  grid-template-areas:
+    "left center right"
+    "bottom bottom bottom";
+  gap: var(--gap);
+  height: 100dvh;
+  width: 100vw;
+  padding: var(--safe-y) var(--safe-x);
+  overflow: hidden;
+  /* Burn-in mitigation: the whole board drifts a couple of pixels periodically. */
+  transition: transform 2s ease-in-out;
+  will-change: transform;
+}
+
+.column {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap);
+  /* Without this a flex child refuses to shrink below its content and overflows. */
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.column--left { grid-area: left; }
+.column--center { grid-area: center; }
+.column--right { grid-area: right; }
+
+.bottom-bar {
+  grid-area: bottom;
+  display: flex;
+  gap: var(--gap);
+  min-height: 0;
+  overflow: hidden;
+}
+/* Overrides panel--fixed: in the bottom bar, panels share the width evenly. */
+.bottom-bar > .panel { flex: 1 1 0; }
+
+.panel {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  padding: var(--panel-padding);
+  background: var(--panel);
+  border: 1px solid var(--panel-edge);
+  border-radius: var(--radius);
+}
+
+/* A panel with grow 0 takes exactly the height of its content. */
+.panel--fixed { flex: 0 0 auto; }
+.panel--grow { flex: 1 1 0; }
+
+.panel__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.6rem;
+  margin-bottom: 0.7rem;
+  flex: 0 0 auto;
+}
+
+.panel__title {
+  margin: 0;
+  font-size: var(--text-meta);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+.panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/*
+ * Staleness. When an upstream fails the panel keeps its last good data rather
+ * than blanking, and says so quietly instead of shouting an error at a room.
+ */
+.stale-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--accent-warn);
+  opacity: 0.85;
+  flex: 0 0 auto;
+}
+
+.panel--stale .panel__body { opacity: 0.55; }
+
+/* A bare panel is type directly on the background, with no card around it. */
+.panel--bare {
+  background: none;
+  border: none;
+  padding: 0.2rem 0.3rem;
+}
