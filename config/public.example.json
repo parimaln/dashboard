@@ -1,0 +1,56 @@
+{
+  "place": "Oslo",
+  "timeZone": "Europe/Oslo",
+  "locale": "en-GB",
+
+  "display": {
+    "safeAreaX": "1.5%",
+    "safeAreaY": "1.5%",
+    "rootFontSize": "clamp(15px, 0.83vw, 42px)",
+    "hideCursor": true,
+    "pixelShiftMinutes": 10
+  },
+
+  "layout": {
+    "clock":        { "area": "left",   "order": 0, "grow": 0 },
+    "calendar-ics": { "area": "left",   "order": 1, "grow": 1 },
+
+    "weather-yr":   { "area": "center", "order": 0, "grow": 0 },
+    "entur":        { "area": "center", "order": 1, "grow": 1 },
+
+    "donetick":     { "area": "right",  "order": 0, "grow": 1 },
+    "ai-briefing":  { "area": "right",  "order": 1, "grow": 0 },
+
+    "mealie":       { "area": "bottom", "order": 0, "grow": 1 },
+    "countdown":    { "area": "bottom", "order": 1, "grow": 1 }
+  },
+
+  "components": {
+    "weather-yr": {
+      "lat": 59.9139,
+      "lon": 10.7522,
+      "forecastDays": 5
+    },
+    "entur": {
+      "fromStopId": "NSR:StopPlace:337",
+      "toStopId": "NSR:StopPlace:58366",
+      "maxDepartures": 5
+    },
+    "calendar-ics": {
+      "daysAhead": 90,
+      "maxEvents": 30
+    },
+    "donetick": {
+      "maxChores": 40
+    },
+    "mealie": {
+      "days": 2
+    },
+    "countdown": {
+      "maxEvents": 6
+    },
+    "ai-briefing": {
+      "refreshMinutes": 60
+    }
+  }
+}
