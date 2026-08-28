@@ -1,0 +1,91 @@
+{
+  "place": "Oslo",
+  "now": {
+    "temperatureC": -3,
+    "symbolCode": "lightsnow_day",
+    "windSpeedMs": 6.2,
+    "windGustMs": 11.4,
+    "humidity": 88,
+    "uvIndex": 0.4,
+    "precipitationMm": 1.8,
+    "isDaylight": true
+  },
+  "sunrise": "2026-09-03T06:32:00.000Z",
+  "sunset": "2026-09-03T19:48:00.000Z",
+  "daily": [
+    {
+      "date": "2026-09-03",
+      "minC": -6,
+      "maxC": -1,
+      "symbolCode": "lightsnow_day",
+      "precipitationMm": 3.2
+    },
+    {
+      "date": "2026-09-04",
+      "minC": -4,
+      "maxC": 2,
+      "symbolCode": "partlycloudy_day",
+      "precipitationMm": 0
+    },
+    {
+      "date": "2026-09-05",
+      "minC": -1,
+      "maxC": 5,
+      "symbolCode": "rain",
+      "precipitationMm": 7.4
+    },
+    {
+      "date": "2026-09-06",
+      "minC": 1,
+      "maxC": 7,
+      "symbolCode": "cloudy",
+      "precipitationMm": 0.6
+    },
+    {
+      "date": "2026-09-07",
+      "minC": 3,
+      "maxC": 9,
+      "symbolCode": "fair_day",
+      "precipitationMm": 0
+    }
+  ],
+  "dress": {
+    "adult": {
+      "headline": "Snow \u2014 waterproof outer layer and boots.",
+      "layers": [
+        "Wool base layer",
+        "Fleece or wool sweater",
+        "Winter jacket",
+        "Waterproof outer shell"
+      ],
+      "accessories": [
+        "Hat",
+        "Gloves",
+        "Waterproof boots"
+      ],
+      "warning": "Icy underfoot \u2014 shoes with grip, or spikes.",
+      "feelsLikeC": -9
+    },
+    "child": {
+      "headline": "Snow \u2014 waterproof outer layer and boots.",
+      "layers": [
+        "Thermal base layer",
+        "Wool mid layer",
+        "Insulated jacket",
+        "Lined trousers",
+        "Waterproof outer shell"
+      ],
+      "accessories": [
+        "Warm hat",
+        "Mittens",
+        "Scarf",
+        "Wool socks",
+        "Waterproof boots",
+        "A spare pair of gloves"
+      ],
+      "warning": "Icy underfoot \u2014 shoes with grip, or spikes.",
+      "feelsLikeC": -11,
+      "extraWarning": "Check hands and ears when they come in."
+    }
+  }
+}

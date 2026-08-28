@@ -1,0 +1,190 @@
+{
+  "events": [
+    {
+      "id": "evt-0",
+      "title": "Standup",
+      "start": "2026-09-03T08:00:00.000Z",
+      "end": "2026-09-03T09:00:00.000Z",
+      "allDay": true,
+      "location": "Sandvika",
+      "calendar": "Family",
+      "colour": "#f2b544"
+    },
+    {
+      "id": "evt-1",
+      "title": "Dentist \u2014 Aria",
+      "start": "2026-09-03T11:00:00.000Z",
+      "end": "2026-09-03T12:00:00.000Z",
+      "allDay": false,
+      "calendar": "Work",
+      "colour": "#4f9cf9"
+    },
+    {
+      "id": "evt-2",
+      "title": "Swimming lesson",
+      "start": "2026-09-03T14:00:00.000Z",
+      "end": "2026-09-03T15:00:00.000Z",
+      "allDay": false,
+      "calendar": "Kids",
+      "colour": "#4ac48b"
+    },
+    {
+      "id": "evt-3",
+      "title": "Parent evening",
+      "start": "2026-09-04T08:00:00.000Z",
+      "end": "2026-09-04T09:00:00.000Z",
+      "allDay": false,
+      "calendar": "Family",
+      "colour": "#f2b544"
+    },
+    {
+      "id": "evt-4",
+      "title": "Grocery delivery",
+      "start": "2026-09-04T11:00:00.000Z",
+      "end": "2026-09-04T12:00:00.000Z",
+      "allDay": false,
+      "location": "Sandvika",
+      "calendar": "Work",
+      "colour": "#4f9cf9"
+    },
+    {
+      "id": "evt-5",
+      "title": "Team retro",
+      "start": "2026-09-04T14:00:00.000Z",
+      "end": "2026-09-04T15:00:00.000Z",
+      "allDay": false,
+      "calendar": "Kids",
+      "colour": "#4ac48b"
+    },
+    {
+      "id": "evt-6",
+      "title": "Piano practice",
+      "start": "2026-09-05T08:00:00.000Z",
+      "end": "2026-09-05T09:00:00.000Z",
+      "allDay": false,
+      "calendar": "Family",
+      "colour": "#f2b544"
+    },
+    {
+      "id": "evt-7",
+      "title": "Book club",
+      "start": "2026-09-05T11:00:00.000Z",
+      "end": "2026-09-05T12:00:00.000Z",
+      "allDay": true,
+      "calendar": "Work",
+      "colour": "#4f9cf9"
+    },
+    {
+      "id": "evt-8",
+      "title": "Car service",
+      "start": "2026-09-05T14:00:00.000Z",
+      "end": "2026-09-05T15:00:00.000Z",
+      "allDay": false,
+      "location": "Sandvika",
+      "calendar": "Kids",
+      "colour": "#4ac48b"
+    },
+    {
+      "id": "evt-9",
+      "title": "Football training",
+      "start": "2026-09-06T08:00:00.000Z",
+      "end": "2026-09-06T09:00:00.000Z",
+      "allDay": false,
+      "calendar": "Family",
+      "colour": "#f2b544"
+    },
+    {
+      "id": "evt-10",
+      "title": "Grandma visits",
+      "start": "2026-09-06T11:00:00.000Z",
+      "end": "2026-09-06T12:00:00.000Z",
+      "allDay": false,
+      "calendar": "Work",
+      "colour": "#4f9cf9"
+    },
+    {
+      "id": "evt-11",
+      "title": "Vaccination",
+      "start": "2026-09-06T14:00:00.000Z",
+      "end": "2026-09-06T15:00:00.000Z",
+      "allDay": false,
+      "calendar": "Kids",
+      "colour": "#4ac48b"
+    },
+    {
+      "id": "evt-12",
+      "title": "School photos",
+      "start": "2026-09-07T08:00:00.000Z",
+      "end": "2026-09-07T09:00:00.000Z",
+      "allDay": false,
+      "location": "Sandvika",
+      "calendar": "Family",
+      "colour": "#f2b544"
+    },
+    {
+      "id": "evt-13",
+      "title": "Library books due",
+      "start": "2026-09-07T11:00:00.000Z",
+      "end": "2026-09-07T12:00:00.000Z",
+      "allDay": false,
+      "calendar": "Work",
+      "colour": "#4f9cf9"
+    },
+    {
+      "id": "evt-14",
+      "title": "Cinema night",
+      "start": "2026-09-07T14:00:00.000Z",
+      "end": "2026-09-07T15:00:00.000Z",
+      "allDay": true,
+      "calendar": "Kids",
+      "colour": "#4ac48b"
+    },
+    {
+      "id": "evt-15",
+      "title": "Dinner with Ellen",
+      "start": "2026-09-08T08:00:00.000Z",
+      "end": "2026-09-08T09:00:00.000Z",
+      "allDay": false,
+      "calendar": "Family",
+      "colour": "#f2b544"
+    },
+    {
+      "id": "evt-16",
+      "title": "Bin day",
+      "start": "2026-09-08T11:00:00.000Z",
+      "end": "2026-09-08T12:00:00.000Z",
+      "allDay": false,
+      "location": "Sandvika",
+      "calendar": "Work",
+      "colour": "#4f9cf9"
+    },
+    {
+      "id": "evt-17",
+      "title": "Physio",
+      "start": "2026-09-08T14:00:00.000Z",
+      "end": "2026-09-08T15:00:00.000Z",
+      "allDay": false,
+      "calendar": "Kids",
+      "colour": "#4ac48b"
+    },
+    {
+      "id": "evt-18",
+      "title": "Quarterly review",
+      "start": "2026-09-09T08:00:00.000Z",
+      "end": "2026-09-09T09:00:00.000Z",
+      "allDay": false,
+      "calendar": "Family",
+      "colour": "#f2b544"
+    },
+    {
+      "id": "evt-19",
+      "title": "Trampoline park",
+      "start": "2026-09-09T11:00:00.000Z",
+      "end": "2026-09-09T12:00:00.000Z",
+      "allDay": false,
+      "calendar": "Work",
+      "colour": "#4f9cf9"
+    }
+  ],
+  "failedSources": []
+}

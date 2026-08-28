@@ -1,0 +1,56 @@
+{
+  "from": "Asker",
+  "to": "Oslo S",
+  "departures": [
+    {
+      "aimedTime": "2026-09-03T07:04:00.000Z",
+      "expectedTime": "2026-09-03T07:04:00.000Z",
+      "minutesUntil": 4,
+      "line": "R11",
+      "destination": "Skien",
+      "mode": "rail",
+      "realtime": true,
+      "unreachable": true
+    },
+    {
+      "aimedTime": "2026-09-03T07:21:00.000Z",
+      "expectedTime": "2026-09-03T07:21:00.000Z",
+      "minutesUntil": 21,
+      "line": "L1",
+      "destination": "Spikkestad",
+      "mode": "rail",
+      "realtime": true,
+      "unreachable": false
+    },
+    {
+      "aimedTime": "2026-09-03T07:38:00.000Z",
+      "expectedTime": "2026-09-03T07:39:00.000Z",
+      "minutesUntil": 38,
+      "line": "R11",
+      "destination": "Skien",
+      "mode": "rail",
+      "realtime": true,
+      "unreachable": false
+    },
+    {
+      "aimedTime": "2026-09-03T07:55:00.000Z",
+      "expectedTime": "2026-09-03T07:55:00.000Z",
+      "minutesUntil": 55,
+      "line": "L13",
+      "destination": "Drammen",
+      "mode": "rail",
+      "realtime": true,
+      "unreachable": false
+    },
+    {
+      "aimedTime": "2026-09-03T08:12:00.000Z",
+      "expectedTime": "2026-09-03T08:12:00.000Z",
+      "minutesUntil": 72,
+      "line": "R11",
+      "destination": "Skien",
+      "mode": "rail",
+      "realtime": true,
+      "unreachable": false
+    }
+  ]
+}
