@@ -1,0 +1,99 @@
+/*
+ * Every size in the dashboard is a rem multiple of one root font size, so the
+ * whole board scales as a single system: set the root size for your screen and
+ * viewing distance and nothing else needs touching.
+ *
+ * The default resolves to about 34px on a 4096-wide panel, which is comfortable
+ * at two to three metres on a 55" screen. The floor and ceiling in the clamp keep
+ * it sane on a laptop and on an 8K panel respectively.
+ *
+ * Readability floor: --text-meta is the smallest thing that renders, at ~29px on
+ * a 4K panel. tests/e2e/layout.spec.ts asserts nothing drops below 28px.
+ */
+:root {
+  --root-font-size: clamp(15px, 0.83vw, 42px);
+
+  --text-hero: 5.5rem;
+  --text-xxl: 3.2rem;
+  --text-xl: 2.4rem;
+  --text-lg: 1.6rem;
+  --text-md: 1.25rem;
+  --text-body: 1.15rem;
+  --text-meta: 0.85rem;
+
+  --weight-light: 300;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 700;
+  --weight-black: 800;
+
+  --gap: 1rem;
+  --panel-padding: 1.1rem 1.3rem;
+  --radius: 0.85rem;
+
+  --safe-x: 1.5%;
+  --safe-y: 1.5%;
+
+  /*
+   * Dark by necessity, not fashion: this is on a television in a living room for
+   * hours. Large bright fills are both uncomfortable at night and the main cause
+   * of uneven panel wear, so there is no large light surface anywhere.
+   */
+  --bg: #07080b;
+  --panel: #101319;
+  --panel-edge: #1e232d;
+  --ink: #f2f5fa;
+  --ink-dim: #9aa4b6;
+  --ink-faint: #5d6779;
+
+  --accent: #4f9cf9;
+  --accent-warm: #f2b544;
+  --accent-good: #4ac48b;
+  --accent-warn: #f0883e;
+  --accent-bad: #f2657a;
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: var(--root-font-size);
+  /* The board is exactly one screen. Nothing scrolls, ever. */
+  overflow: hidden;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  height: 100%;
+  overflow: hidden;
+  overscroll-behavior: none;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: var(--text-body);
+  font-weight: var(--weight-regular);
+  line-height: 1.35;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body.kiosk-cursor-hidden,
+body.kiosk-cursor-hidden * {
+  cursor: none;
+}
+
+#root {
+  height: 100%;
+}
+
+/* Numeric readouts must not reflow as digits change. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
