@@ -27,6 +27,18 @@ export default defineComponent({
     maxBullets: z.number().int().min(0).max(3).default(3),
     /** Reminders drawn from config/household.md that apply today. */
     maxReminders: z.number().int().min(0).max(4).default(3),
+    /** Donetick chore labels that always count as important, regardless of priority. */
+    importantChoreLabels: z.array(z.string()).default([]),
+    /** Calendar source labels (the "Label" in CALENDAR_ICS_URLS) that always count as important. */
+    importantCalendarLabels: z.array(z.string()).default([]),
+    /**
+     * A chore counts as important when its Donetick priority is set and at most this
+     * value (lower is more urgent; 0/unset never counts). 0 disables priority-based
+     * importance entirely — see docs/AI.md before relying on this.
+     */
+    importantChorePriorityMax: z.number().int().min(0).max(4).default(0),
+    /** Local hour (24h) at/after which the briefing also looks ahead to tomorrow. */
+    eveningCutoffHour: z.number().int().min(0).max(23).default(16),
   }),
   // Inference is the most expensive thing on the board and the least time-critical.
   server: { refresh: '1h', handler: generateBriefing },

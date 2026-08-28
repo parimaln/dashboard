@@ -114,7 +114,8 @@ scraped from the page:
 
 - current conditions, the computed dressing advice, and tomorrow's forecast
 - today's calendar events, and the next few beyond that
-- chores overdue, due today, and due tomorrow
+- chores overdue and due today, always; chores due tomorrow only once it's evening
+  (see "Evening look-ahead" below)
 - today's and tomorrow's meal plan
 - the nearest countdowns
 - the next departures
@@ -122,6 +123,46 @@ scraped from the page:
 
 Every field is optional. A disabled component simply contributes nothing, and the
 prompt tells the model to write less rather than pad.
+
+## What counts as important
+
+`components/ai-briefing/rules.ts` is a small pure, unit-tested module — the same
+category as `dress.ts` above. Calendar events and chores are flagged `important`
+and reordered important-first *before* the model ever sees them, so the model
+never decides importance itself; it only leads with whatever the rules already
+flagged.
+
+- A chore is important when it's overdue, when one of its Donetick labels is in
+  `importantChoreLabels`, or when its Donetick `priority` is set and at most
+  `importantChorePriorityMax`.
+- A calendar event is important when its calendar source's label (the `Label` in
+  `CALENDAR_ICS_URLS`) is in `importantCalendarLabels`.
+
+Both label lists default to empty (no label-based filtering; overdue chores are
+still always important) and are set per-installation in `config/public.json` under
+the `ai-briefing` component, the same way every other component's filters work.
+
+> **Donetick priority caveat:** Donetick's priority field is lower-is-more-urgent
+> by convention (P1 highest ... P4 lowest, 0/unset = none), but this has not been
+> verified against every Donetick server version. `importantChorePriorityMax`
+> defaults to `0` (disabled) for that reason — check a real payload from your own
+> instance's `priority` values before turning it on, or use `importantChoreLabels`
+> instead.
+
+## Evening look-ahead
+
+`eveningCutoffHour` (default `16`, i.e. 4pm local time) decides when the briefing
+stops being only about today. At and after that hour:
+
+- chores due tomorrow join the main chore list (still important-first within their
+  own bucket, after today's and overdue chores), and
+- a `tomorrow` object appears in the model's data — tomorrow's weekday name, its
+  calendar events, and its chores — so the briefing can start naming tomorrow's
+  highlights in the evening, not just repeat today's.
+
+Before the cutoff, none of that is sent — the model has no way to know it's evening
+except by the presence of the `tomorrow` object, kept that way deliberately so the
+decision is made by the clock, not inferred by the model.
 
 ## Turning it off
 

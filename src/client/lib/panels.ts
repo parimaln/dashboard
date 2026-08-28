@@ -9,6 +9,8 @@ export interface PanelProps<D = unknown, C = unknown> {
   config: C;
   /** True when the last refresh failed and `data` is the previous result. */
   stale: boolean;
+  /** Message from the most recent failed refresh, set even when `data` has never succeeded. */
+  error?: string;
   /** Locale and timezone, for the helpers in ./format.ts. */
   format: FormatContext;
   /**
