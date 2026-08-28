@@ -4,12 +4,17 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateObject } from 'ai';
 import { z } from 'zod';
 import type { HandlerContext } from '../../src/shared/component.js';
+import { isCalendarEventImportant, isChoreImportant, isEvening, prioritise, weekdayName } from './rules.js';
 
 export interface BriefingConfig {
   /** Component ids whose data is offered to the model as context. */
   sources: string[];
   maxBullets: number;
   maxReminders: number;
+  importantChoreLabels: string[];
+  importantCalendarLabels: string[];
+  importantChorePriorityMax: number;
+  eveningCutoffHour: number;
 }
 
 export interface BriefingData {
@@ -98,25 +103,78 @@ export function buildContext(ctx: HandlerContext<BriefingConfig>): Record<string
     };
   }
 
+  const now = new Date();
+  // Rule-based, not left to the model: only after this hour does "today's briefing"
+  // also look ahead to tomorrow.
+  const evening = isEvening(now, ctx.timeZone, ctx.config.eveningCutoffHour);
+
   const calendar = ctx.readComponent<{ events: { title: string; start: string; allDay: boolean; calendar: string }[] }>(
     'calendar-ics',
   );
   if (calendar) {
-    const todayKey = new Date().toLocaleDateString('en-CA', { timeZone: ctx.timeZone });
-    context.today = calendar.events
-      .filter((e) => e.start.slice(0, 10) === todayKey)
-      .map((e) => ({ title: e.title, at: e.allDay ? 'all day' : e.start.slice(11, 16), whose: e.calendar }));
-    context.soon = calendar.events.slice(0, 6).map((e) => ({ title: e.title, on: e.start.slice(0, 10) }));
+    const todayKey = now.toLocaleDateString('en-CA', { timeZone: ctx.timeZone });
+    context.today = prioritise(
+      calendar.events.filter((e) => e.start.slice(0, 10) === todayKey),
+      (e) => isCalendarEventImportant(e, ctx.config),
+    ).map((e) => ({
+      title: e.title,
+      at: e.allDay ? 'all day' : e.start.slice(11, 16),
+      whose: e.calendar,
+      important: isCalendarEventImportant(e, ctx.config),
+    }));
+    // Prioritise the full list before slicing to 6, so a flagged event further down
+    // the chronological order can still make the cut rather than merely being
+    // reordered within whichever 6 happened to come first.
+    context.soon = prioritise(calendar.events, (e) => isCalendarEventImportant(e, ctx.config))
+      .slice(0, 6)
+      .map((e) => ({ title: e.title, on: e.start.slice(0, 10), important: isCalendarEventImportant(e, ctx.config) }));
   }
 
-  const chores = ctx.readComponent<{ chores: { name: string; bucket: string; assignee?: string }[] }>('donetick');
+  const chores = ctx.readComponent<{
+    chores: { name: string; bucket: 'overdue' | 'today' | 'tomorrow' | 'upcoming' | 'someday'; assignee?: string; labels: string[]; priority?: number }[];
+  }>('donetick');
   if (chores) {
-    // Tomorrow is included because most useful reminders are preparation:
-    // knowing tonight that the swimming bag is needed in the morning.
-    context.chores = chores.chores
-      .filter((c) => ['overdue', 'today', 'tomorrow'].includes(c.bucket))
+    // Tomorrow's chores only join the main list in the evening; before the cutoff
+    // they live solely in context.tomorrow below. Grouping by bucket first, then
+    // prioritising within each group, keeps an important "tomorrow" chore from
+    // outranking an unflagged "today" one.
+    const buckets: ('overdue' | 'today' | 'tomorrow')[] = evening ? ['overdue', 'today', 'tomorrow'] : ['overdue', 'today'];
+    const ordered = buckets.flatMap((bucket) =>
+      prioritise(
+        chores.chores.filter((c) => c.bucket === bucket),
+        (c) => isChoreImportant(c, ctx.config),
+      ),
+    );
+    context.chores = ordered
       .slice(0, 12)
-      .map((c) => ({ name: c.name, when: c.bucket, who: c.assignee }));
+      .map((c) => ({ name: c.name, when: c.bucket, who: c.assignee, important: isChoreImportant(c, ctx.config) }));
+  }
+
+  if (evening) {
+    const tomorrowDate = new Date(now.getTime() + 86_400_000);
+    const tomorrowKey = tomorrowDate.toLocaleDateString('en-CA', { timeZone: ctx.timeZone });
+    const tomorrowEvents = calendar
+      ? prioritise(
+          calendar.events.filter((e) => e.start.slice(0, 10) === tomorrowKey),
+          (e) => isCalendarEventImportant(e, ctx.config),
+        ).map((e) => ({
+          title: e.title,
+          at: e.allDay ? 'all day' : e.start.slice(11, 16),
+          important: isCalendarEventImportant(e, ctx.config),
+        }))
+      : [];
+    const tomorrowChores = chores
+      ? prioritise(
+          chores.chores.filter((c) => c.bucket === 'tomorrow'),
+          (c) => isChoreImportant(c, ctx.config),
+        ).map((c) => ({ name: c.name, who: c.assignee, important: isChoreImportant(c, ctx.config) }))
+      : [];
+    // Only set when there's something to say — an empty tomorrow block would just
+    // tell the model "nothing happens tomorrow" with no way to distinguish that
+    // from "we don't know", so leave it absent instead.
+    if (tomorrowEvents.length > 0 || tomorrowChores.length > 0) {
+      context.tomorrow = { weekday: weekdayName(tomorrowDate, ctx.timeZone), events: tomorrowEvents, chores: tomorrowChores };
+    }
   }
 
   const meals = ctx.readComponent<{ days: { date: string; entries: { type: string; title: string }[] }[] }>('mealie');
@@ -160,6 +218,8 @@ export async function generateBriefing(ctx: HandlerContext<BriefingConfig>): Pro
 
   const provider = createOpenAICompatible({ name: 'local', baseURL, apiKey });
 
+  const tomorrow = (context as { tomorrow?: { weekday: string } }).tomorrow;
+
   const { object } = await generateObject({
     model: provider(modelId),
     schema: briefingSchema,
@@ -171,6 +231,10 @@ export async function generateBriefing(ctx: HandlerContext<BriefingConfig>): Pro
         day: 'numeric',
         month: 'long',
       })}.`,
+      tomorrow
+        ? `\nIt is now evening. Also prepare for tomorrow (${tomorrow.weekday}) using the "tomorrow" section of ` +
+          `today's data below, and any household notes relevant to that weekday.`
+        : '',
       household ? `\nStanding household notes:\n\n${household}` : '',
       `\nToday's data:\n${JSON.stringify(context, null, 2)}`,
     ]

@@ -50,7 +50,11 @@
       "maxEvents": 6
     },
     "ai-briefing": {
-      "refreshMinutes": 60
+      "refreshMinutes": 60,
+      "importantChoreLabels": ["urgent"],
+      "importantCalendarLabels": ["Work"],
+      "importantChorePriorityMax": 0,
+      "eveningCutoffHour": 16
     }
   }
 }

@@ -124,6 +124,7 @@ export function App() {
         data: (state?.data ?? null) as never,
         config: (bootstrap.config.components[id] ?? {}) as never,
         stale: (state?.stale ?? false) || tooOld,
+        error: state?.error,
         format,
         read: <T,>(otherId: string) => states.get(otherId)?.data as T | undefined,
       };

@@ -9,11 +9,11 @@ interface EnturPanelConfig {
   walkingMinutes: number;
 }
 
-export default function EnturPanel({ data, stale, format }: PanelProps<EnturData, EnturPanelConfig>) {
+export default function EnturPanel({ data, stale, error, format }: PanelProps<EnturData, EnturPanelConfig>) {
   if (!data) {
     return (
-      <Panel title="Departures" stale={stale}>
-        <PanelPlaceholder label="Loading departures…" />
+      <Panel title="Departures" stale={stale} staleReason={error}>
+        <PanelPlaceholder label={error ? `Departures unavailable — ${error}` : 'Loading departures…'} />
       </Panel>
     );
   }

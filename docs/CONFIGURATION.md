@@ -85,6 +85,10 @@ than failing mysteriously at runtime.
 Anything you leave out gets the manifest's default, so you only need to specify
 what you want to change.
 
+`ai-briefing`'s importance and evening look-ahead settings (`importantChoreLabels`,
+`importantCalendarLabels`, `importantChorePriorityMax`, `eveningCutoffHour`) are
+documented in [`docs/AI.md`](./AI.md) alongside the rest of the briefing's behaviour.
+
 ## Environment variables
 
 Everything secret. Copy `.env.example` to `.env` and fill in what applies.
