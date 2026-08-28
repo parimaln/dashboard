@@ -1,0 +1,45 @@
+# Copy to compose.yml, create .env beside it, then `docker compose up -d`.
+#
+# The dashboard must run on your own network, not on a public host: it talks to
+# LAN services like Mealie and Donetick over plain HTTP, which a browser will not
+# allow a page served from a public HTTPS origin to do. See docs/INSTALL.md.
+
+services:
+  dashboard:
+    image: ghcr.io/parimaln/dashboard:latest
+    container_name: dashboard
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    # Secrets and LAN addresses live here and only here — never in the image,
+    # never in git. Start from .env.example.
+    env_file:
+      - .env
+    volumes:
+      # Optional: edit these on the host instead of rebuilding the image.
+      - ./config/public.json:/app/config/public.json:ro
+      - ./config/events.json:/app/config/events.json:ro
+      # Standing household notes the AI briefing reads. Start from
+      # config/household.example.md. Edits take effect on the next refresh.
+      - ./config/household.md:/app/config/household.md:ro
+      # - ./prompts/briefing.md:/app/prompts/briefing.md:ro
+    labels:
+      # Opt this container in to automatic updates.
+      - "com.centurylinklabs.watchtower.enable=true"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:8080/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # Closes the loop between merging a pull request and the wall display updating:
+  # CI publishes a new image, Watchtower pulls it here, the container restarts,
+  # and the browser reloads itself when it sees a new build id on /api/stream.
+  # No inbound ports, no webhooks, no tunnel.
+  watchtower:
+    image: containrrr/watchtower
+    container_name: dashboard-watchtower
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: --label-enable --cleanup --interval 300
