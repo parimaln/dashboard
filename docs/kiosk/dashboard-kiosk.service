@@ -1,0 +1,48 @@
+# Chromium in kiosk mode, as a systemd user service.
+#
+# Install:
+#   mkdir -p ~/.config/systemd/user
+#   cp dashboard-kiosk.service ~/.config/systemd/user/
+#   # edit the URL below
+#   systemctl --user daemon-reload
+#   systemctl --user enable --now dashboard-kiosk.service
+#   sudo loginctl enable-linger "$USER"   # start without anyone logging in
+#
+# Start and stop are the contract the voice automation calls. See AUTOMATION.md.
+
+[Unit]
+Description=Family dashboard kiosk
+After=graphical-session.target
+PartOf=graphical-session.target
+
+[Service]
+Type=simple
+
+# Change this to your dashboard host.
+Environment=DASHBOARD_URL=http://dashboard.lan:8080
+
+# Uncomment for X11 if the session variables are not inherited.
+# Environment=DISPLAY=:0
+
+# Stop the desktop blanking the screen behind the dashboard.
+ExecStartPre=-/usr/bin/xset s off
+ExecStartPre=-/usr/bin/xset -dpms
+ExecStartPre=-/usr/bin/xset s noblank
+
+ExecStart=/usr/bin/chromium \
+  --kiosk \
+  --app=${DASHBOARD_URL} \
+  --noerrdialogs \
+  --disable-infobars \
+  --disable-session-crashed-bubble \
+  --disable-features=Translate \
+  --check-for-update-interval=31536000 \
+  --autoplay-policy=no-user-gesture-required \
+  --password-store=basic
+
+# Come back if the browser crashes, but do not fight a machine that is shutting down.
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=graphical-session.target
