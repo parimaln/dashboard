@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import path from 'node:path';
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { generateObject } from 'ai';
+import { generateObject, NoObjectGeneratedError } from 'ai';
 import { z } from 'zod';
 import type { HandlerContext } from '../../src/shared/component.js';
 import { isCalendarEventImportant, isChoreImportant, isEvening, prioritise, weekdayName } from './rules.js';
@@ -67,18 +67,24 @@ async function readHousehold(explicitPath: string | undefined): Promise<string |
 const briefingSchema = z.object({
   headline: z.string().describe('At most 12 words. The single most useful thing about today.'),
   bullets: z.array(z.string()).describe('0-3 complete sentences, at most 20 words each, most important first.'),
+  // Optional: the extraction below and every consumer (BriefingData.dressLine?,
+  // weather-yr's panel) already treats a missing dressLine/reminders as "none" —
+  // a model that drops one of these fields under a long prompt must not cause the
+  // whole briefing (including a perfectly fine headline/bullets) to be discarded.
   dressLine: z
     .string()
     .describe(
       'One sentence, at most 18 words, rephrasing the supplied dressing advice in the context of the day. ' +
         'Never contradict it, never add a garment it does not mention.',
-    ),
+    )
+    .optional(),
   reminders: z
     .array(z.string())
     .describe(
       'Things to bring or do today that follow from the household notes and are not already on the ' +
         'calendar or the chore list. Empty array if the notes say nothing about today.',
-    ),
+    )
+    .optional(),
 });
 
 /**
@@ -220,30 +226,44 @@ export async function generateBriefing(ctx: HandlerContext<BriefingConfig>): Pro
 
   const tomorrow = (context as { tomorrow?: { weekday: string } }).tomorrow;
 
-  const { object } = await generateObject({
-    model: provider(modelId),
-    schema: briefingSchema,
-    system,
-    prompt: [
-      `Today is ${new Date().toLocaleDateString('en-GB', {
-        timeZone: ctx.timeZone,
-        weekday: 'long',
-        day: 'numeric',
-        month: 'long',
-      })}.`,
-      tomorrow
-        ? `\nIt is now evening. Also prepare for tomorrow (${tomorrow.weekday}) using the "tomorrow" section of ` +
-          `today's data below, and any household notes relevant to that weekday.`
-        : '',
-      household ? `\nStanding household notes:\n\n${household}` : '',
-      `\nToday's data:\n${JSON.stringify(context, null, 2)}`,
-    ]
-      .filter(Boolean)
-      .join('\n'),
-    abortSignal: ctx.signal,
-    // A wall briefing is not worth a long stall on a busy local GPU.
-    maxRetries: 1,
-  });
+  let object: z.infer<typeof briefingSchema>;
+  try {
+    ({ object } = await generateObject({
+      model: provider(modelId),
+      schema: briefingSchema,
+      system,
+      prompt: [
+        `Today is ${new Date().toLocaleDateString('en-GB', {
+          timeZone: ctx.timeZone,
+          weekday: 'long',
+          day: 'numeric',
+          month: 'long',
+        })}.`,
+        tomorrow
+          ? `\nIt is now evening. Also prepare for tomorrow (${tomorrow.weekday}) using the "tomorrow" section of ` +
+            `today's data below, and any household notes relevant to that weekday.`
+          : '',
+        household ? `\nStanding household notes:\n\n${household}` : '',
+        `\nToday's data:\n${JSON.stringify(context, null, 2)}`,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+      abortSignal: ctx.signal,
+      // A wall briefing is not worth a long stall on a busy local GPU.
+      maxRetries: 1,
+    }));
+  } catch (err) {
+    // A smaller local model occasionally returns JSON that doesn't validate. The
+    // scheduler only logs err.message ("...did not match schema"), which doesn't
+    // say what the model actually returned — capture that here for diagnosis.
+    if (NoObjectGeneratedError.isInstance(err)) {
+      ctx.log('ai-briefing: model output failed validation', {
+        cause: err.cause instanceof Error ? err.cause.message : String(err.cause),
+        rawText: err.text?.slice(0, 1000),
+      });
+    }
+    throw err;
+  }
 
   return {
     headline: object.headline.trim(),
