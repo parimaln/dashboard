@@ -10,12 +10,13 @@ function makeComponent(
   id: string,
   handler: () => Promise<unknown>,
   refresh: `${number}m` = '10m',
+  extra: Partial<NonNullable<ComponentDefinition<unknown, unknown>['server']>> = {},
 ): ComponentDefinition<unknown, unknown> {
   return defineComponent({
     id,
     name: id,
     config: z.object({}),
-    server: { refresh, handler },
+    server: { refresh, handler, ...extra },
   }) as ComponentDefinition<unknown, unknown>;
 }
 
@@ -169,6 +170,80 @@ describe('Scheduler', () => {
     await flush();
 
     expect(good).toHaveBeenCalled();
+    scheduler.stop();
+  });
+
+  it('does not run an activeClientsOnly component while no browser is connected', async () => {
+    const handler = vi.fn().mockResolvedValue({ ok: true });
+    const scheduler = schedulerFor([makeComponent('a', handler, '10m', { activeClientsOnly: true })]);
+
+    scheduler.start();
+    await flush();
+    expect(handler).not.toHaveBeenCalled();
+
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    expect(handler).not.toHaveBeenCalled();
+    scheduler.stop();
+  });
+
+  it('catches up an activeClientsOnly component the moment a client connects', async () => {
+    const handler = vi.fn().mockResolvedValue({ ok: true });
+    const scheduler = schedulerFor([makeComponent('a', handler, '10m', { activeClientsOnly: true })]);
+
+    scheduler.start();
+    await flush();
+    expect(handler).not.toHaveBeenCalled();
+
+    scheduler.notifyClientConnected();
+    await flush();
+    expect(handler).toHaveBeenCalledTimes(1);
+    scheduler.stop();
+  });
+
+  it('keeps refreshing an activeClientsOnly component on its interval while a client stays connected', async () => {
+    const handler = vi.fn().mockResolvedValue({ ok: true });
+    const scheduler = schedulerFor([makeComponent('a', handler, '10m', { activeClientsOnly: true })]);
+
+    scheduler.start();
+    scheduler.notifyClientConnected();
+    await flush();
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    expect(handler).toHaveBeenCalledTimes(2);
+    scheduler.stop();
+  });
+
+  it('stops refreshing an activeClientsOnly component once the last client disconnects', async () => {
+    const handler = vi.fn().mockResolvedValue({ ok: true });
+    const scheduler = schedulerFor([makeComponent('a', handler, '10m', { activeClientsOnly: true })]);
+
+    scheduler.start();
+    scheduler.notifyClientConnected();
+    await flush();
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    scheduler.notifyClientDisconnected();
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    expect(handler).toHaveBeenCalledTimes(1);
+    scheduler.stop();
+  });
+
+  it('does not double-count multiple connected clients', async () => {
+    const handler = vi.fn().mockResolvedValue({ ok: true });
+    const scheduler = schedulerFor([makeComponent('a', handler, '10m', { activeClientsOnly: true })]);
+
+    scheduler.start();
+    scheduler.notifyClientConnected();
+    await flush();
+    expect(handler).toHaveBeenCalledTimes(1);
+
+    // A second tab connects, then the first disconnects: one client remains, so
+    // refreshes must continue.
+    scheduler.notifyClientConnected();
+    scheduler.notifyClientDisconnected();
+    await vi.advanceTimersByTimeAsync(10 * 60_000);
+    expect(handler).toHaveBeenCalledTimes(2);
     scheduler.stop();
   });
 

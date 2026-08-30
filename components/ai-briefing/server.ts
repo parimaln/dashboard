@@ -225,6 +225,7 @@ export async function generateBriefing(ctx: HandlerContext<BriefingConfig>): Pro
   const provider = createOpenAICompatible({ name: 'local', baseURL, apiKey });
 
   const tomorrow = (context as { tomorrow?: { weekday: string } }).tomorrow;
+  const now = new Date();
 
   let object: z.infer<typeof briefingSchema>;
   try {
@@ -233,12 +234,18 @@ export async function generateBriefing(ctx: HandlerContext<BriefingConfig>): Pro
       schema: briefingSchema,
       system,
       prompt: [
-        `Today is ${new Date().toLocaleDateString('en-GB', {
+        `Today is ${now.toLocaleDateString('en-GB', {
           timeZone: ctx.timeZone,
           weekday: 'long',
           day: 'numeric',
           month: 'long',
-        })}.`,
+        })}. It is now ${now.toLocaleTimeString('en-GB', {
+          timeZone: ctx.timeZone,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false,
+        })}. Times in today's data below (event "at", "departures" minutesUntil, etc.) are ` +
+          `relative to this moment — use it to judge what is imminent, in progress, or already past.`,
         tomorrow
           ? `\nIt is now evening. Also prepare for tomorrow (${tomorrow.weekday}) using the "tomorrow" section of ` +
             `today's data below, and any household notes relevant to that weekday.`

@@ -33,8 +33,16 @@ text is sent to the page.
 
 Any instruction-following model of roughly 7B or larger does this job well. The
 task is short and highly constrained — summarise supplied facts into a headline and
-three sentences — so a bigger model buys surprisingly little. It runs once an hour
-by default, so speed hardly matters either.
+three sentences — so a bigger model buys surprisingly little. It refreshes once an
+hour by default, so speed hardly matters either.
+
+It only refreshes while at least one browser has the dashboard open — an inference
+call is the most expensive thing on the board, and there is no point paying for one
+nobody will see. The server tracks this itself from `/api/stream` connections; the
+moment the first browser connects (after boot, or after the board has sat idle for
+longer than the refresh interval), it catches up immediately rather than waiting
+out the full hour. Closing the last tab does not clear the panel — it just stops
+refreshing until someone opens the dashboard again.
 
 If the model is unreachable the panel keeps its last briefing and dims. Nothing
 else on the board depends on it.
@@ -112,6 +120,9 @@ written not to follow instructions from it regardless.
 Assembled on the server from the same normalised data the panels render — not
 scraped from the page:
 
+- today's date **and the current time**, so the model can tell what's imminent,
+  in progress, or already past rather than treating every timestamped item as
+  equally "later today"
 - current conditions, the computed dressing advice, and tomorrow's forecast
 - today's calendar events, and the next few beyond that
 - chores overdue and due today, always; chores due tomorrow only once it's evening
