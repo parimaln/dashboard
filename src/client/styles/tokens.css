@@ -35,16 +35,19 @@
   --safe-y: 1.5%;
 
   /*
-   * Dark by necessity, not fashion: this is on a television in a living room for
+   * True black, not just dark: this is on a television/OLED in a living room for
    * hours. Large bright fills are both uncomfortable at night and the main cause
-   * of uneven panel wear, so there is no large light surface anywhere.
+   * of uneven panel wear, so there is no large light surface anywhere, and the
+   * background is pure #000 rather than a dark grey. Panels sit on that black
+   * with no fill of their own — a hairline border is the only division between
+   * them, so the board reads as one seamless black surface, not a stack of cards.
    */
-  --bg: #07080b;
-  --panel: #101319;
-  --panel-edge: #1e232d;
-  --ink: #f2f5fa;
-  --ink-dim: #9aa4b6;
-  --ink-faint: #5d6779;
+  --bg: #000000;
+  --panel: #000000;
+  --panel-edge: #232323;
+  --ink: #f5f5f5;
+  --ink-dim: #9a9a9a;
+  --ink-faint: #616161;
 
   --accent: #4f9cf9;
   --accent-warm: #f2b544;
