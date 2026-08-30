@@ -136,6 +136,7 @@ async function main() {
         send('version', VERSION);
         for (const state of scheduler.getAllStates()) send('state', state);
 
+        scheduler.notifyClientConnected();
         const unsubscribe = scheduler.subscribe((state) => send('state', state));
         // Proxies drop idle connections; a comment frame keeps it alive without
         // being delivered to the client as an event.
@@ -153,6 +154,7 @@ async function main() {
           open = false;
           clearInterval(keepAlive);
           unsubscribe();
+          scheduler.notifyClientDisconnected();
           try {
             controller.close();
           } catch {

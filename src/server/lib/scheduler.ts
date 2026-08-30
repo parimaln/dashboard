@@ -35,6 +35,7 @@ export class Scheduler {
   private readonly listeners = new Set<StateListener>();
   private readonly abort = new AbortController();
   private watchdog: NodeJS.Timeout | null = null;
+  private clientsConnected = 0;
 
   constructor(
     private readonly components: ComponentDefinition<unknown, unknown>[],
@@ -112,6 +113,33 @@ export class Scheduler {
     }
   }
 
+  /**
+   * Called by the `/api/stream` route as browsers connect and disconnect. Going
+   * from zero to one immediately catches up any `activeClientsOnly` component
+   * whose data is missing or has aged past its refresh interval, so opening the
+   * dashboard after a long idle stretch does not wait a full interval for a
+   * briefing to appear.
+   */
+  notifyClientConnected(): void {
+    const wasIdle = this.clientsConnected === 0;
+    this.clientsConnected += 1;
+    if (!wasIdle) return;
+
+    const now = Date.now();
+    for (const def of this.components) {
+      if (!def.server?.activeClientsOnly) continue;
+      const intervalMs = this.intervals.get(def.id);
+      const since = this.states.get(def.id)?.updatedAt;
+      if (since === null || since === undefined || (intervalMs !== undefined && now - since >= intervalMs)) {
+        void this.run(def);
+      }
+    }
+  }
+
+  notifyClientDisconnected(): void {
+    this.clientsConnected = Math.max(0, this.clientsConnected - 1);
+  }
+
   stop(): void {
     this.abort.abort(new Error('server shutting down'));
     if (this.watchdog) clearInterval(this.watchdog);
@@ -123,6 +151,11 @@ export class Scheduler {
   /** Runs one component's handler now. Exposed so a route can force a refresh. */
   async run(def: ComponentDefinition<unknown, unknown>): Promise<void> {
     if (!def.server) return;
+
+    // Nobody is looking at the board: skip a refresh that would otherwise burn an
+    // inference call (or similar cost) for no one. notifyClientConnected() catches
+    // this back up the moment a browser connects.
+    if (def.server.activeClientsOnly && this.clientsConnected === 0) return;
 
     // MOCK=1 substitutes a fixture for the handler, so the whole board can be
     // rendered and tested without reaching any upstream. Kept here rather than

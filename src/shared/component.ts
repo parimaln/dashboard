@@ -78,6 +78,12 @@ export interface ComponentDefinition<C = unknown, D = unknown> {
     refresh: Refresh;
     handler: (ctx: HandlerContext<C>) => Promise<D>;
     /**
+     * Skip refreshes while no browser has the dashboard open. For an expensive
+     * handler (an LLM call) there is no point paying for a refresh nobody will see;
+     * the scheduler catches up immediately once a client connects.
+     */
+    activeClientsOnly?: boolean;
+    /**
      * Optional image resolver. Upstreams like Mealie serve recipe images behind the
      * same token as their API, so the browser cannot load them directly without the
      * token leaking into the page. A component that returns image references in its

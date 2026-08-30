@@ -41,7 +41,9 @@ export default defineComponent({
     eveningCutoffHour: z.number().int().min(0).max(23).default(16),
   }),
   // Inference is the most expensive thing on the board and the least time-critical.
-  server: { refresh: '1h', handler: generateBriefing },
+  // activeClientsOnly: nobody pays for a model call while no browser has the
+  // dashboard open; the scheduler catches up the moment one connects.
+  server: { refresh: '1h', handler: generateBriefing, activeClientsOnly: true },
 });
 
 export type { BriefingData };
